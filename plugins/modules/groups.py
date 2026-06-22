@@ -32,34 +32,50 @@ options:
     suboptions:
       id:
         type: str
-        description: group id
+        description: A unique identifier for this group.
       groupname:
         type: str
-        description: group name
+        description: The POSIX name for the group. (maxLength: 60)
       description:
         type: str
-        description: A description of the group's purpose.
+        description: A description of the group's purpose. (maxLength: 128)
       enabled:
         type: bool
-        description: group enabled or disabled
+        description: >
+          If the group is currently enabled.
+          If a group is disabled, any permissions attached to it will not be bestowed upon users in that group.
       access_rights:
         type: list
         elements: str
-        description: List of access rights assigned to the group.
+        description: A list of resources or features that members of this group have been granted access to.
       members:
         type: list
         elements: str
-        description: List of user ids or usernames that are members of the group.
+        description: >
+          A list of users assigned to this group.
+          The users can be referenced by either usernames or user ids.
       ports:
         type: list
-        description: List of port ids assigned to the group.
         elements: str
+        description: A list of port ids that users in this group can access.
       mode:
         type: str
-        description: Group mode. Deprecated since 2022/08, use C(access_rights) instead.
+        description: >
+          Set to global to allow access to all ports.
+          Set to scoped to limit access to specific ports.
+        deprecated:
+          removed_in: "1.0.0"
+          why: Fine-grained C(access_rights) replaced mode/role permissions in 2022/08.
+          alternative: access_rights
       role:
         type: str
-        description: Group role. Deprecated since 2022/08, use C(access_rights) instead.
+        description: >
+          Set to Administrator to allow access to the entire web UI.
+          Set to ConsoleUser to limit access to serial port pages only.
+        deprecated:
+          removed_in: "1.0.0"
+          why: Fine-grained C(access_rights) replaced mode/role permissions in 2022/08.
+          alternative: access_rights
   state:
     description:
     - The state of the configuration after module completion.
