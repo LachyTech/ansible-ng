@@ -1,0 +1,32 @@
+---
+# Restore device configuration from file.
+# The previously exported configuration file can be restored to the device using
+# the config_restore module. The version and SKU must match exactly.
+- name: Restore Opengear device configuration
+  hosts: opengear
+  gather_facts: false
+
+  tasks:
+    - name: Restore device configuration
+      opengear.ng.config_restore:
+        config:
+          config_file: "{{ backup_path }}/config-backup-{{ inventory_hostname }}.cfg"
+        state: replaced
+      register: restore
+
+    - name: Wait for restore to complete
+      opengear.ng.config_restore:
+        state: gathered
+      register: status
+      until: status.gathered.restore.status != 'in_progress'
+      retries: 30
+      delay: 10
+      failed_when: false
+      when: restore.changed
+
+    - name: Assert restore succeeded
+      ansible.builtin.assert:
+        that:
+          - status.gathered.restore.status == 'completed'
+          - status.gathered.restore.exit_code == 0
+      when: restore.changed

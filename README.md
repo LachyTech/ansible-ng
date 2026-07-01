@@ -24,6 +24,7 @@ to communicate with Opengear devices via the REST API.
 | opengear.ng.auth                 | Manage remote authentication, authorization, and accounting (AAA) configuration.                     |
 | opengear.ng.conns                | Manage network connection configuration.                                                             |
 | opengear.ng.config_export        | Export current device configuration to file.                                                         |
+| opengear.ng.config_restore       | Restore device configuration from file.                                                              |
 | opengear.ng.facts                | Gather device information and network resource configuration facts.                                  |
 | opengear.ng.failover             | Manage failover configuration and retrieve failover status.                                          |
 | opengear.ng.firmware_upgrade     | Manage firmware upgrades on Opengear devices.                                                        |
