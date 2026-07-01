@@ -63,6 +63,24 @@ class HttpApi(HttpApiBase):
     def get(self, command, path, query_params):
         return self.send_request(data=command, path=path, query_params=query_params)
 
+    def get_raw(self, path, query_params=None):
+        """Fetch a raw response without JSON parsing.
+
+        Returns raw bytes, the caller decides how to handle them.
+        Use for text responses (decode as UTF-8) or binary responses
+        (keep as bytes or write directly to file).
+        """
+        headers = {'Content-Type': 'application/json'}
+        if query_params:
+            query_string = '&'.join(f'{k}={v}' for k, v in query_params.items())
+            path = f'{path}?{query_string}'
+        response, response_content = self.connection.send(
+            self.path + path, None, method='GET', headers=headers
+        )
+        if response_content:
+            return response_content.getvalue()
+        return None
+
     def send_request(self, data, path, method='GET', query_params=None):
         headers = {'Content-Type': 'application/json'}
         if query_params:
