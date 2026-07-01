@@ -33,7 +33,10 @@ def handle_response(response):
         try:
             handled_response = json.loads(content)
         except ValueError:
-            return {}
+            # Response is not JSON - return as text string.
+            # This handles unexpected plain text responses.
+            # For known binary or text responses use get_raw() instead.
+            return content.decode('utf-8', errors='replace')
         if "error" in handled_response:
             error = handled_response["error"][0]
             raise ConnectionError(error["text"], code=error["code"])
