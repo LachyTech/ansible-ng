@@ -29,7 +29,9 @@ class FactsArgs(object):  # pylint: disable=R0903
         "pdu",
         "services",
         "static_routes",
-        "system",
+        "system_authorized_keys",
+        "system_config",
+        "system_time",
         "user_authorized_keys",
         "users",
     ]

@@ -1,0 +1,21 @@
+---
+- name: Example playbook for performing a factory reset
+  hosts: opengear
+  gather_facts: false
+
+  tasks:
+    - name: Erase device configuration and restore factory defaults
+      opengear.ng.system_factory_reset:
+      register: reset
+
+    # Wait for device to come back online after reboot
+    - name: Wait for device to come back online
+      opengear.ng.facts:
+        gather_network_resources:
+          - system_info
+      register: online_check
+      failed_when: false
+      until: online_check.ansible_facts is defined
+      retries: 30
+      delay: 10
+      when: reset.changed
