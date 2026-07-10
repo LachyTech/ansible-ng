@@ -131,6 +131,38 @@ configuration of an Opengear network device, using the FQCN:
         state: replaced
 ```
 
+### Gathering Facts
+
+Use `opengear.ng.facts` with `gather_network_resources` to retrieve device facts. The following subsets are available:
+
+| Subset                   | Description                                                              |
+| ------------------------ | ------------------------------------------------------------------------ |
+| `auth`                   | Remote authentication, authorization, and accounting (AAA) configuration.|
+| `conns`                  | Network connection configuration.                                        |
+| `failover`               | Failover configuration and status.                                       |
+| `groups`                 | User group configuration.                                                |
+| `pdu`                    | PDU configuration and status.                                            |
+| `physifs`                | Physical network interface configuration.                                |
+| `ports`                  | Serial port configuration.                                               |
+| `services`               | System service configuration.                                            |
+| `static_routes`          | Static route configuration.                                              |
+| `system_authorized_keys` | System-level SSH authorized keys.                                        |
+| `system_config`          | General system configuration (admin info, banner, FIPS, session timeouts)|
+| `system_diskspace`       | Disk space facts for all mounts.                                         |
+| `system_firmware_upgrade`| Current firmware version and upgrade status.                             |
+| `system_info`            | Read-only system identity facts (model, serial number, firmware version).|
+| `system_time`            | System time and timezone configuration.                                  |
+| `user_authorized_keys`   | Per-user SSH authorized keys.                                            |
+| `users`                  | User configuration.                                                      |
+
+```yaml
+- name: Gather system information and disk space facts
+  opengear.ng.facts:
+    gather_network_resources:
+      - system_info
+      - system_diskspace
+```
+
 ### Further Examples
 
 For more examples of opengear.ng module usage, see [Examples](examples/).
