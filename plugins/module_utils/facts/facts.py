@@ -21,7 +21,9 @@ from ansible_collections.opengear.ng.plugins.module_utils.facts.services import 
 from ansible_collections.opengear.ng.plugins.module_utils.facts.static_routes import StaticRoutesFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.system import SystemFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.system_authorized_keys import SystemAuthorizedKeysFacts
+from ansible_collections.opengear.ng.plugins.module_utils.facts.system_diskspace import SystemDiskspaceFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.system_firmware_upgrade import SystemFirmwareUpgradeFacts
+from ansible_collections.opengear.ng.plugins.module_utils.facts.system_info import SystemInfoFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.system_time import SystemTimeFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.user_authorized_keys import UserAuthorizedKeysFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.users import UsersFacts
@@ -39,7 +41,9 @@ FACT_RESOURCE_SUBSETS = dict(
     static_routes=StaticRoutesFacts,
     system_authorized_keys=SystemAuthorizedKeysFacts,
     system_config=SystemFacts,
+    system_diskspace=SystemDiskspaceFacts,
     system_firmware_upgrade=SystemFirmwareUpgradeFacts,
+    system_info=SystemInfoFacts,
     system_time=SystemTimeFacts,
     user_authorized_keys=UserAuthorizedKeysFacts,
     users=UsersFacts,
