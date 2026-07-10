@@ -1,0 +1,14 @@
+---
+- name: Example playbook for gathering system disk space facts
+  hosts: opengear
+  gather_facts: false
+
+  tasks:
+    - name: Gather disk space facts
+      opengear.ng.facts:
+        gather_network_resources:
+          - system_diskspace
+
+    - name: Show disk space for all mounts
+      ansible.builtin.debug:
+        var: ansible_network_resources.system_diskspace

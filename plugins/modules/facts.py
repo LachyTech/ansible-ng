@@ -52,7 +52,9 @@ options:
       - static_routes
       - system_authorized_keys
       - system_config
+      - system_diskspace
       - system_firmware_upgrade
+      - system_info
       - system_time
       - user_authorized_keys
       - users
@@ -69,6 +71,12 @@ EXAMPLES = """
     gather_network_resources:
       - system_config
       - system_time
+
+- name: Gather system info and disk space facts
+  opengear.ng.facts:
+    gather_network_resources:
+      - system_info
+      - system_diskspace
 
 - name: Gather system authorized keys
    opengear.ng.facts:
