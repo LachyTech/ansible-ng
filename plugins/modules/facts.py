@@ -36,6 +36,8 @@ options:
   gather_network_resources:
     description:
       - When supplied, this argument will restrict the facts collected to a given subset.
+      - Use C(all) to gather all subsets except opt-in facts that must be requested explicitly
+      - "Opt-in facts are: C(system_firmware_upgrade, user_authorized_keys, system_authorized_keys)"
     required: false
     type: list
     elements: str
@@ -62,9 +64,10 @@ options:
 """
 
 EXAMPLES = """
-- name: Gather all facts
+- name: Gather all facts (excludes opt-in subsets)
   opengear.ng.facts:
-    gather_subset: all
+    gather_network_resources:
+      - all
 
 - name: Gather system configuration facts
   opengear.ng.facts:
@@ -78,9 +81,9 @@ EXAMPLES = """
       - system_info
       - system_diskspace
 
-- name: Gather system authorized keys
-   opengear.ng.facts:
-     gather_network_resources:
+- name: Gather system authorized keys (opt-in)
+  opengear.ng.facts:
+    gather_network_resources:
       - system_authorized_keys
 """
 
