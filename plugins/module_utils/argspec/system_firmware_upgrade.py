@@ -9,9 +9,9 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-class FirmwareUpgradeArgs(object):  # pylint: disable=R0903
+class SystemFirmwareUpgradeArgs(object):  # pylint: disable=R0903
     """
-    Argument specification for the firmware_upgrade module.
+    Argument specification for the system_firmware_upgrade module.
     """
 
     def __init__(self, **kwargs):

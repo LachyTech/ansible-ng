@@ -17,16 +17,16 @@ from ansible_collections.opengear.ng.plugins.module_utils.utils.utils import (
 )
 
 
-class FirmwareUpgrade(ConfigBase):
+class SystemFirmwareUpgrade(ConfigBase):
     """
     Manages firmware upgrade for Opengear devices.
     """
 
     gather_subset = ['!all', '!min']
-    gather_network_resources = ['firmware_upgrade']
+    gather_network_resources = ['system_firmware_upgrade']
 
     def __init__(self, module):
-        super(FirmwareUpgrade, self).__init__(module)
+        super(SystemFirmwareUpgrade, self).__init__(module)
 
     def get_firmware_upgrade_facts(self):
         """Get the current firmware version and upgrade status.
@@ -37,7 +37,7 @@ class FirmwareUpgrade(ConfigBase):
         facts, _warnings = Facts(self._module).get_facts(
             self.gather_subset, self.gather_network_resources
         )
-        return facts['ansible_network_resources'].get('firmware_upgrade', {})
+        return facts['ansible_network_resources'].get('system_firmware_upgrade', {})
 
     def execute_module(self):
         """Execute the module.

@@ -64,10 +64,10 @@ class TestFactsModule(TestModuleBase):
             ]
             return mock
 
-        def _setup_firmware_upgrade_mocks(self):
+        def _setup_system_firmware_upgrade_mocks(self):
             mock_version = patch(
                 "ansible_collections.opengear.ng.plugins.module_utils."
-                "facts.firmware_upgrade.FirmwareUpgradeFacts.get_version"
+                "facts.system_firmware_upgrade.SystemFirmwareUpgradeFacts.get_version"
             )
             mock_version.start().return_value = {
                 'firmware_version': '25.04.0',
@@ -76,7 +76,7 @@ class TestFactsModule(TestModuleBase):
 
             mock_status = patch(
                 "ansible_collections.opengear.ng.plugins.module_utils."
-                "facts.firmware_upgrade.FirmwareUpgradeFacts.get_upgrade_status"
+                "facts.system_firmware_upgrade.SystemFirmwareUpgradeFacts.get_upgrade_status"
             )
             mock_status.start().return_value = {'state': 'pending'}
 
@@ -85,7 +85,7 @@ class TestFactsModule(TestModuleBase):
         self.mock_users = _setup_users_mocks(self)
         self.mock_uak_users, self.mock_uak_keys = _setup_user_authorized_keys_mocks(self)
         self.mock_groups = _setup_groups_mocks(self)
-        self.mock_fw_version, self.mock_fw_status = _setup_firmware_upgrade_mocks(self)
+        self.mock_fw_version, self.mock_fw_status = _setup_system_firmware_upgrade_mocks(self)
 
         self.mock_connection = patch(
             "ansible_collections.opengear.ng.plugins.module_utils."
@@ -131,13 +131,13 @@ class TestFactsModule(TestModuleBase):
         self.assertIn('ansible_facts', result)
         self.assertIn('groups', result['ansible_facts']['ansible_network_resources'])
 
-    def test_facts_gather_firmware_upgrade(self):
-        """Facts module dispatches correctly to firmware_upgrade facts class"""
-        set_module_args({'gather_network_resources': ['firmware_upgrade']})
+    def test_facts_gather_system_firmware_upgrade(self):
+        """Facts module dispatches correctly to system_firmware_upgrade facts class"""
+        set_module_args({'gather_network_resources': ['system_firmware_upgrade']})
         result = self.execute_module(changed=False)
 
         self.assertIn('ansible_facts', result)
-        self.assertIn('firmware_upgrade', result['ansible_facts']['ansible_network_resources'])
+        self.assertIn('system_firmware_upgrade', result['ansible_facts']['ansible_network_resources'])
 
     def test_facts_gather_multiple(self):
         """Facts module can gather multiple resources in a single call"""
