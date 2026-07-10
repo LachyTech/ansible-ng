@@ -51,21 +51,29 @@ options:
       - pdu
       - services
       - static_routes
-      - system
+      - system_authorized_keys
+      - system_config
+      - system_time
       - user_authorized_keys
       - users
     version_added: '1.0.0'
 """
 
 EXAMPLES = """
-- name: Gather all om facts
+- name: Gather all facts
   opengear.ng.facts:
     gather_subset: all
 
-- name: Gather system facts only
+- name: Gather system configuration facts
   opengear.ng.facts:
     gather_network_resources:
-      - system
+      - system_config
+      - system_time
+
+- name: Gather system authorized keys
+   opengear.ng.facts:
+     gather_network_resources:
+      - system_authorized_keys
 """
 
 RETURN = """

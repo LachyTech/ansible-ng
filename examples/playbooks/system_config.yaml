@@ -1,26 +1,60 @@
 ---
+- name: Example playbook for system configuration
+  hosts: opengear
+  gather_facts: false
 
-- name: System configuration
-  hosts: all
-  connection: httpapi
   tasks:
-    - name: Change Admin Infro
+    - name: Gather system facts
+      opengear.ng.facts:
+        gather_network_resources:
+          - system_config
+
+    - name: Configure admin info
       opengear.ng.system:
         config:
           admin_info:
-            hostname: om1000
-            contact: avankatw@digi.com.au
-            location: AUS
-    - name: Change Timezone
+            hostname: om-device-01
+            contact: netops@example.com
+            location: Server Room A, Rack 3
+        state: merged
+
+    - name: Configure login banner
       opengear.ng.system:
         config:
-          timezone: Australia/Brisbane
-    - name: Add SSH Keys
+          banner: "Authorized access only. All activity is monitored and logged."
+        state: merged
+
+    - name: Configure SSH port
       opengear.ng.system:
         config:
-          system_authorized_keys:
-            - key: "{{ 'rsa key' }}"
-              username: root
-              id: users_ssh_authorized_keys-1
-        state:
-          deleted
+          ssh_port: 22
+        state: merged
+
+    - name: Configure session timeouts
+      opengear.ng.system:
+        config:
+          session_timeout:
+            cli_timeout: 30
+            serial_port_timeout: 60
+            webui_timeout: 30
+        state: merged
+
+    - name: Enable FIPS compliance
+      opengear.ng.system:
+        config:
+          fips:
+            enabled: true
+        state: merged
+
+    - name: Configure cell reliability test
+      opengear.ng.system:
+        config:
+          cell_reliability_test:
+            enabled: true
+            period: 300
+            test_url:
+              - https://www.example.com
+            signal_strength_threshold:
+              lower: 20
+              upper: 80
+        state: merged

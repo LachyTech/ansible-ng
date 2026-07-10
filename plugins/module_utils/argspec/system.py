@@ -44,30 +44,49 @@ class SystemArgs(object):  # pylint: disable=R0903
                     },
                     "type": "dict",
                 },
-                "cli_session_timeout": {"type": "int"},
-                "hostname": {"type": "str"},
-                "reboot": {"type": "bool"},
-                "ssh_port": {"type": "int"},
-                "system_authorized_keys": {
-                    "elements": "dict",
+                "cellular_logging": {
                     "options": {
-                        "id": {"type": "str"},
-                        "key": {"type": "str", "no_log": True},
-                        "username": {"type": "str"},
-                        "multi_field_identifier": {"type": "str"},
+                        "device": {"type": "str"},
+                        "enabled": {"type": "bool"},
+                        "filter": {"type": "str"},
                     },
-                    "type": "list",
-                    "no_log": True,
+                    "type": "dict",
                 },
-                "time": {"type": "str"},
-                "timezone": {"type": "str"},
-                "webui_session_timeout": {"type": "int"},
+                "fips": {
+                    "options": {
+                        "enabled": {"type": "bool"},
+                    },
+                    "type": "dict",
+                },
+                "session_timeout": {
+                    "options": {
+                        "cli_timeout": {"type": "int"},
+                        "serial_port_timeout": {"type": "int"},
+                        "webui_timeout": {"type": "int"},
+                    },
+                    "type": "dict",
+                },
+                "ssh_port": {"type": "int"},
             },
             "type": "dict",
         },
         "state": {
-            "choices": ["merged", "overridden", "deleted", "gathered", "rendered"],
+            "choices": ["merged", "replaced", "gathered", "rendered"],
             "default": "merged",
             "type": "str",
         },
-    }  # pylint: disable=C0301
+    }
+
+
+# Maps each config field to its REST endpoint and the sequence of keys the
+# value must be wrapped in (facts) / unwrapped from (config) to form the
+# request/response body. Consumed by SystemConfig and SystemFacts.
+FIELD_MAP = {
+    "admin_info": ("system/admin_info", ["system_admin_info"]),
+    "banner": ("system/banner", ["system_banner", "banner"]),
+    "cell_reliability_test": ("system/cell_reliability_test", ["cell_reliability_test"]),
+    "cellular_logging": ("system/cellular_logging", ["system_cellular_logging"]),
+    "fips": ("system/fips", ["fips"]),
+    "session_timeout": ("system/session_timeout", ["system_session_timeout"]),
+    "ssh_port": ("system/ssh_port", ["system_ssh_port", "port"]),
+}

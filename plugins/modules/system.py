@@ -19,14 +19,18 @@ DOCUMENTATION = """
 ---
 module: system
 version_added: '1.0.0'
-short_description: Manages configuration of system attributes on Opengear devices
+short_description: Manages general system settings on Opengear devices
 description:
-  - Manages configuration of system attributes on Opengear devices
+  - Manages general system settings on Opengear devices such as the banner,
+    hostname, SSH port, session timeouts and admin information.
+  - The system time and timezone, SSH authorized keys and appliance reboots are
+    managed by the dedicated M(opengear.ng.system_time),
+    M(opengear.ng.system_authorized_keys) and M(opengear.ng.system_reboot) modules.
 author:
   - Opengear (@opengear)
 options:
   config:
-    description: Manage configuration of system attributes on Opengear devices
+    description: Manage configuration of general system settings on Opengear devices
     type: dict
     suboptions:
       admin_info:
@@ -45,76 +49,89 @@ options:
       banner:
         type: str
         description: Update the Operations Manager appliance banner text.
-      hostname:
-        type: str
-        description: hostname or address
-      webui_session_timeout:
-        type: int
-        description: Update the WebUI session timeout (in minutes).
-      cli_session_timeout:
-        type: int
-        description: Update the CLI session timeout (in minutes)
-      system_authorized_keys:
-        description: Add an SSH key for the specified user
-        type: list
-        elements: dict
-        suboptions:
-          id:
-            type: str
-            description: The SSH key id
-          multi_field_identifier:
-            type: str
-            description: Unique identifier for this authorized keys record.
-          key:
-            type: str
-            description: The SSH key
-          username:
-            type: str
-            description: The user associated with the SSH key
-      ssh_port:
-        type: int
-        description: Update the system SSH port
-      timezone:
-        type: str
-        description: Update the system timezone
-      time:
-        type: str
-        description: Update the Operations Manager current time
-      cell_reliability_test:
+      cellular_logging:
         type: dict
-        description: Update configuration items related to running the cell reliability test.
+        description: >
+          Cellular logging provides the ability to capture the RRC connection messages from the cellular module.
+          This entity allows configuration of cellular logging and is only to be used during compliance testing.
         suboptions:
           enabled:
             type: bool
-            description: enabled or disabled
+            description: Enable cellular logging on the device. This puts the system in Diagnostic Mode.
+          filter:
+            type: str
+            description: The name of a binary filter to be provided to the Sierra Wireless utility.
+          device:
+            type: str
+            description: The path to the cellular modem QCDM device.
+      cell_reliability_test:
+        type: dict
+        description: >
+          Update configuration items related to running the cell reliability test.
+          This allows the user to enable and disable the test, change how frequently it executes, configure the URL
+          to use in the test and configure the alert threshold for signal strength.
+        suboptions:
+          enabled:
+            type: bool
+            description: Enable or disable the cell reliability test.
           period:
             type: int
-            description: period
+            description: The time in seconds between cell reliability test runs.
           test_url:
             type: list
             elements: str
-            description: test url
+            description: The URLs to perform the cell reliability test against.
           signal_strength_threshold:
             type: dict
-            description: signal threshold
+            description: The lower and upper threshold values for acceptable cellular signal strength.
             suboptions:
               lower:
                 type: int
-                description: lower threshold
+                description: The lower threshold percentage value for acceptable signal strength.
               upper:
                 type: int
-                description: upper threshold
-      reboot:
-        type: bool
-        description: reboot
+                description: The upper threshold percentage value for acceptable signal strength.
+      fips:
+        type: dict
+        description: Configure the Opengear device for FIPS compliance.
+        suboptions:
+          enabled:
+            type: bool
+            description: Set whether the OpenSSL package only uses FIPS 140-2 compliant cryptographic modules.
+      session_timeout:
+        type: dict
+        description: Configure Opengear appliance session timeouts.
+        suboptions:
+          cli_timeout:
+            type: int
+            description: |
+              The timeout (in minutes) for local console, web terminal, and ssh sessions.
+              Maximum value is 1440.
+              Set this to 0 to disable the timeout.
+          webui_timeout:
+            type: int
+            description: |
+              The timeout (in minutes) for web UI and REST API sessions.
+              Maximum value is 1440.
+          serial_port_timeout:
+            type: int
+            description: |
+              The timeout (in minutes) for serial port sessions.
+              Maximum value is 1440.
+      ssh_port:
+        type: int
+        description: |
+          Direct SSH links on the serial ports page will use this port number.
+          Set this option if you have configured SSH to be reachable on a non-standard port.
   state:
     description:
     - The state of the configuration after module completion.
+    - C(merged) and C(replaced) both update only the settings provided; unspecified
+      settings are left untouched (this resource has no items to remove).
     type: str
     choices:
     - merged
-    - overridden
-    - deleted
+    - replaced
     - gathered
     - rendered
     default: merged
@@ -124,12 +141,12 @@ EXAMPLES = """
 - name: Configure system information
   opengear.ng.system:
     config:
-      hostname: om-device-01
-      timezone: Australia/Brisbane
       banner: "Authorized access only"
       ssh_port: 22
-      webui_session_timeout: 30
-      cli_session_timeout: 30
+      session_timeout:
+        cli_timeout: 30
+        serial_port_timeout: 30
+        webui_timeout: 30
     state: merged
 
 - name: Configure admin info
@@ -141,31 +158,10 @@ EXAMPLES = """
         location: Server Room A, Rack 3
     state: merged
 
-- name: Add SSH authorized key
-  opengear.ng.system:
-    config:
-      system_authorized_keys:
-        - username: admin
-          key: "{{ ssh_public_key }}"
-    state: merged
-
-- name: Configure cell reliability test
-  opengear.ng.system:
-    config:
-      cell_reliability_test:
-        enabled: true
-        period: 300
-        test_url:
-          - https://example.com
-        signal_strength_threshold:
-          lower: -110
-          upper: -70
-    state: merged
-
 - name: Gather system facts
   opengear.ng.facts:
     gather_network_resources:
-      - system
+      - system_config
 """
 
 RETURN = """
