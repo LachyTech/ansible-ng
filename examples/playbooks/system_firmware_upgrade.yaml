@@ -5,7 +5,7 @@
 
   tasks:
     - name: Get firmware facts
-      opengear.ng.firmware_upgrade:
+      opengear.ng.system_firmware_upgrade:
         state: gathered
       register: result
 
@@ -14,7 +14,7 @@
         var: result.gathered
 
     - name: Upgrade firmware - accepts local image path or remote URL
-      opengear.ng.firmware_upgrade:
+      opengear.ng.system_firmware_upgrade:
         config:
           version: 25.11.4
           firmware_image: "{{ firmware_image_path }}"
@@ -24,7 +24,7 @@
 
     # Poll until device goes offline or upgrade completes
     - name: Wait for firmware upgrade to complete
-      opengear.ng.firmware_upgrade:
+      opengear.ng.system_firmware_upgrade:
         state: gathered
       register: status
       failed_when: false
@@ -36,7 +36,7 @@
 
     # Wait for device to come back online after reboot
     - name: Wait for device to come back online
-      opengear.ng.firmware_upgrade:
+      opengear.ng.system_firmware_upgrade:
         state: gathered
       register: final_status
       failed_when: false

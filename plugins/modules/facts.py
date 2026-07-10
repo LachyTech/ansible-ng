@@ -44,7 +44,6 @@ options:
       - auth
       - conns
       - failover
-      - firmware_upgrade
       - groups
       - physifs
       - ports
@@ -53,6 +52,7 @@ options:
       - static_routes
       - system_authorized_keys
       - system_config
+      - system_firmware_upgrade
       - system_time
       - user_authorized_keys
       - users

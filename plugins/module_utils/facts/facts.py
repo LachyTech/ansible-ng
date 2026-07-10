@@ -13,7 +13,6 @@ from ansible_collections.opengear.ng.plugins.module_utils.facts.auth import Auth
 from ansible_collections.opengear.ng.plugins.module_utils.facts.base import FactsBase
 from ansible_collections.opengear.ng.plugins.module_utils.facts.conns import ConnsFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.failover import FailoverFacts
-from ansible_collections.opengear.ng.plugins.module_utils.facts.firmware_upgrade import FirmwareUpgradeFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.groups import GroupsFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.pdu import PduFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.physifs import PhysifsFacts
@@ -22,28 +21,28 @@ from ansible_collections.opengear.ng.plugins.module_utils.facts.services import 
 from ansible_collections.opengear.ng.plugins.module_utils.facts.static_routes import StaticRoutesFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.system import SystemFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.system_authorized_keys import SystemAuthorizedKeysFacts
+from ansible_collections.opengear.ng.plugins.module_utils.facts.system_firmware_upgrade import SystemFirmwareUpgradeFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.system_time import SystemTimeFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.user_authorized_keys import UserAuthorizedKeysFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.users import UsersFacts
-
 
 FACT_LEGACY_SUBSETS = {}
 FACT_RESOURCE_SUBSETS = dict(
     auth=AuthFacts,
     conns=ConnsFacts,
     failover=FailoverFacts,
-    firmware_upgrade=FirmwareUpgradeFacts,
     groups=GroupsFacts,
     pdu=PduFacts,
     physifs=PhysifsFacts,
     ports=PortsFacts,
-    user_authorized_keys=UserAuthorizedKeysFacts,
-    users=UsersFacts,
     services=ServicesFacts,
     static_routes=StaticRoutesFacts,
     system_authorized_keys=SystemAuthorizedKeysFacts,
     system_config=SystemFacts,
+    system_firmware_upgrade=SystemFirmwareUpgradeFacts,
     system_time=SystemTimeFacts,
+    user_authorized_keys=UserAuthorizedKeysFacts,
+    users=UsersFacts,
 )
 
 
