@@ -60,7 +60,7 @@ class HttpApi(HttpApiBase):
         response = self.send_request(data, login_path, 'POST')
         self.connection._auth = {'Authorization': 'Token ' + response['session']}
 
-    def get(self, command, path, query_params):
+    def get(self, command, path, query_params=None):
         return self.send_request(data=command, path=path, query_params=query_params)
 
     def get_raw(self, path, query_params=None):
