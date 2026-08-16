@@ -69,6 +69,11 @@ collections:
 
 > **Developers:** See [CONTRIBUTING.md](CONTRIBUTING.md) for local development installation instructions.
 
+| Names | Purpose              |
+|-------|----------------------|
+| Test  | This is a test table |
+
+
 
 ## Using NG Collection
 
