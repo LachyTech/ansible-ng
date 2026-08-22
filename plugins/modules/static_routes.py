@@ -27,32 +27,32 @@ author:
   - Opengear (@opengear)
 options:
   config:
-    description: Manage configuration of services on Opengear devices
+    description: Manage configuration of static routes on Opengear devices
     type: list
     elements: dict
     suboptions:
       id:
         description: Unique id of item.
         type: str
-      description:
-        description: A description for the static route.
-        type: str
       destination_address:
         description: The destination network/host that the route provides access to.
         type: str
       destination_netmask:
-        description: Netmask for IPv4/IPv6 (CIDR format).
+        description: Netmask for IPv4/IPv6 (CIDR format, 0-128).
         type: int
       gateway_address:
-        description: The IPv4/IPv6 address of the router gateway that will route packets to the destination address.
+        description: |
+          The IPv4/IPv6 address of the router gateway that will route packets to the destination address.
+          Either this or C(interface) must be provided.
         type: str
       interface:
-        description: The network interface to be associated with the route.
+        description: |
+          The network interface to be associated with the route.
+          Either this or C(gateway_address) must be provided.
         type: str
       metric:
-        description: The route metric, which represents the cost of routing packets via this route.
+        description: The route metric. Lower metric routes are preferred.
         type: int
-
   state:
     description:
     - The state of the configuration after module completion.
@@ -65,6 +65,14 @@ options:
     - gathered
     - rendered
     default: merged
+notes:
+  - Diff output shows the expected configuration change based on the commands
+    generated. It does not reflect the actual device state after execution,
+    which may differ due to device-side normalization or concurrent changes.
+    Use state=gathered after a run to verify the actual device state.
+  - Either C(gateway_address) or C(interface) must be provided when creating a route.
+  - Routes are matched by C(destination_address). Multiple routes to the same
+    destination address are not supported.
 """
 
 EXAMPLES = """
@@ -74,8 +82,6 @@ EXAMPLES = """
       - destination_address: 192.168.10.0
         destination_netmask: 24
         gateway_address: 10.0.0.1
-        interface: eth0
-        description: Route to office LAN
         metric: 100
     state: merged
 
@@ -85,14 +91,10 @@ EXAMPLES = """
       - destination_address: 192.168.10.0
         destination_netmask: 24
         gateway_address: 10.0.0.1
-        interface: eth0
-        description: Route to office LAN
         metric: 100
       - destination_address: 172.16.0.0
         destination_netmask: 16
         gateway_address: 10.0.0.1
-        interface: eth0
-        description: Route to management network
         metric: 100
     state: merged
 
@@ -102,24 +104,24 @@ EXAMPLES = """
       - destination_address: 0.0.0.0
         destination_netmask: 0
         gateway_address: 10.0.0.1
-        interface: eth0
-        description: Default gateway
         metric: 100
     state: overridden
 
-- name: Delete a specific static route by id
+- name: Delete a specific static route by destination
   opengear.ng.static_routes:
     config:
-      - id: "route-1"
+      - destination_address: 192.168.10.0
     state: deleted
 
 - name: Delete all static routes
   opengear.ng.static_routes:
-    state: deleted
+    config: []
+    state: overridden
 
 - name: Gather existing static routes
-  opengear.ng.static_routes:
-    state: gathered
+  opengear.ng.facts:
+    gather_network_resources:
+      - static_routes
 """
 
 RETURN = """

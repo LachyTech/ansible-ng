@@ -1,20 +1,50 @@
 ---
-
-- name: Configure static route
-  hosts: all
-  connection: httpapi
+- name: Example playbook for managing static routes
+  hosts: opengear
   gather_facts: false
+
   tasks:
-    - name: Add static routes
+    - name: Gather static routes facts
+      opengear.ng.facts:
+        gather_network_resources:
+          - static_routes
+      register: facts_result
+
+    - name: Show static routes facts
+      ansible.builtin.debug:
+        var: facts_result
+
+    # Add a new route to a management network via merge
+    - name: Add management network route
       opengear.ng.static_routes:
         config:
-          - destination_address: 192.168.10.16
-            destination_netmask: 3
+          - destination_address: 192.168.100.0
+            destination_netmask: 24
             gateway_address: 192.168.0.1
-            metric: 4
-          - destination_address: 192.168.10.14
-            destination_netmask: 4
+            metric: 100
+        state: merged
+
+    # Update the metric on the route via merge (other fields are preserved)
+    - name: Lower the metric on the management route
+      opengear.ng.static_routes:
+        config:
+          - destination_address: 192.168.100.0
+            metric: 50
+        state: merged
+
+    # Replace the route with an exact desired state (removes unspecified fields)
+    - name: Set exact state for management route
+      opengear.ng.static_routes:
+        config:
+          - destination_address: 192.168.100.0
+            destination_netmask: 24
             gateway_address: 192.168.0.1
-            metric: 4
-        state:
-          overridden
+            metric: 50
+        state: replaced
+
+    # Delete a specific route by destination address
+    - name: Delete management network route
+      opengear.ng.static_routes:
+        config:
+          - destination_address: 192.168.100.0
+        state: deleted
