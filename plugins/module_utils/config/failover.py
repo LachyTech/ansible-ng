@@ -77,15 +77,15 @@ class Failover(ConfigBase):
             if not self._module.check_mode:
                 for command in commands:
                     try:
-                        response = self._connection.send_request(
+                        self._connection.send_request(
                             command['data'], command['path'], command['method']
                         )
-                        self.current_state = response.get('failover_settings', {})
                     except ConnectionError as exc:
                         if not exc.args[0].startswith('Expecting value:'):
                             raise exc
             else:
-                # Simulate state changes for check mode + diff
+                # Simulate state changes for check mode so result['after'] is accurate
+                self.current_state = deepcopy(existing_failover_facts)
                 for command in commands:
                     self.current_state.update(command['data']['failover_settings'])
             result['changed'] = True
@@ -93,7 +93,11 @@ class Failover(ConfigBase):
         result['commands'] = commands
 
         if self.state in self.ACTION_STATES or self.state == 'gathered':
-            changed_failover_facts = self.get_failover_facts(self.current_state or None)
+            if result['changed'] and self._module.check_mode:
+                # Use simulated state; device state is unchanged in check mode
+                changed_failover_facts = self.get_failover_facts(self.current_state or None)
+            else:
+                changed_failover_facts = self.get_failover_facts()
         elif self.state == 'rendered':
             result['rendered'] = commands
 
@@ -102,9 +106,13 @@ class Failover(ConfigBase):
             if result['changed']:
                 result['after'] = changed_failover_facts
                 if self._module._diff:
+                    # Compute diff from command body so it is accurate in both
+                    # check mode and real mode without an extra API round-trip
+                    cmd_body = commands[0]['data']['failover_settings'] if commands else {}
+                    diff_after = dict_merge(deepcopy(existing_failover_facts), cmd_body)
                     result['diff'] = {
                         'before': json.dumps(existing_failover_facts, indent=4) + '\n',
-                        'after': json.dumps(changed_failover_facts, indent=4) + '\n',
+                        'after': json.dumps(diff_after, indent=4) + '\n',
                     }
         elif self.state == 'gathered':
             result['gathered'] = changed_failover_facts
@@ -134,8 +142,6 @@ class Failover(ConfigBase):
         :returns: the commands necessary to migrate the current configuration
                   to the desired configuration
         """
-        self.current_state = deepcopy(have or {})
-
         state = self._module.params['state']
         if state in ('overridden', 'replaced'):
             commands = self._state_replaced(want, have)
