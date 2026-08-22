@@ -20,32 +20,16 @@ class AuthArgs(object):  # pylint: disable=R0903
     argument_spec = {
         "config": {
             "options": {
-                "ldapAuthenticationServers": {
-                    "elements": "dict",
-                    "options": {
-                        "hostname": {"type": "str"},
-                        "id": {"type": "str"},
-                        "port": {"type": "int"},
-                    },
-                    "type": "list",
+                "mode": {
+                    "type": "str",
+                    "choices": ["local", "radius", "tacacs", "ldap"],
                 },
-                "ldapBaseDN": {"type": "str"},
-                "ldapBindDN": {"type": "str"},
-                "ldapBindPassword": {"type": "str", "no_log": True},
-                "ldapGroupMembershipAttribute": {"type": "str"},
-                "ldapIgnoreReferals": {"type": "bool"},
-                "ldapUsernameAttribute": {"type": "str"},
-                "mode": {"type": "str"},
-                "policy": {"type": "str"},
-                "radiusAccountingServers": {
-                    "elements": "dict",
-                    "options": {
-                        "hostname": {"type": "str"},
-                        "id": {"type": "str"},
-                        "port": {"type": "int"},
-                    },
-                    "type": "list",
+                "policy": {
+                    "type": "str",
+                    "choices": ["remotedownlocal", "remotelocal"],
                 },
+                "timeout": {"type": "int"},
+                "radiusMethod": {"type": "str", "choices": ["pap", "mschapv2"]},
                 "radiusAuthenticationServers": {
                     "elements": "dict",
                     "options": {
@@ -55,7 +39,20 @@ class AuthArgs(object):  # pylint: disable=R0903
                     },
                     "type": "list",
                 },
+                "radiusAccountingServers": {
+                    "elements": "dict",
+                    "options": {
+                        "hostname": {"type": "str"},
+                        "id": {"type": "str"},
+                        "port": {"type": "int"},
+                    },
+                    "type": "list",
+                },
+                "radiusAccountingEnabled": {"type": "bool"},
+                "radiusRequireMessageAuthenticator": {"type": "bool"},
                 "radiusPassword": {"type": "str", "no_log": True},
+                "tacacsMethod": {"type": "str", "choices": ["pap", "chap", "login"]},
+                "tacacsService": {"type": "str"},
                 "tacacsAuthenticationServers": {
                     "elements": "dict",
                     "options": {
@@ -65,9 +62,29 @@ class AuthArgs(object):  # pylint: disable=R0903
                     },
                     "type": "list",
                 },
-                "tacacsMethod": {"type": "str"},
+                "tacacsAccountingEnabled": {"type": "bool"},
                 "tacacsPassword": {"type": "str", "no_log": True},
-                "tacacsService": {"type": "str"},
+                "ldapBaseDN": {"type": "str"},
+                "ldapBindDN": {"type": "str"},
+                "ldapBindPassword": {"type": "str", "no_log": True},
+                "ldapAuthenticationServers": {
+                    "elements": "dict",
+                    "options": {
+                        "hostname": {"type": "str"},
+                        "id": {"type": "str"},
+                        "port": {"type": "int"},
+                    },
+                    "type": "list",
+                },
+                "ldapUsernameAttribute": {"type": "str"},
+                "ldapGroupMembershipAttribute": {"type": "str"},
+                "ldapIgnoreReferrals": {"type": "bool"},
+                "ldapSslMode": {
+                    "type": "str",
+                    "choices": ["ldap_only", "ldaps_preferred", "ldaps_only"],
+                },
+                "ldapSslIgnoreCertErrors": {"type": "bool"},
+                "ldapSslCaCert": {"type": "str"},
             },
             "type": "dict",
         },

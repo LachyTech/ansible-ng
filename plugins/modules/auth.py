@@ -21,7 +21,8 @@ module: auth
 version_added: '1.0.0'
 short_description: Manages auth configuration for Opengear devices
 description:
-  - Manages auth configuration for Opengear devices
+  - Manages authentication configuration for Opengear devices, including local,
+    RADIUS, TACACS+, and LDAP authentication modes.
 author:
   - Opengear (@opengear)
 options:
@@ -31,99 +32,135 @@ options:
     suboptions:
       mode:
         type: str
-        description: auth mode
+        description: Authentication mode
+        choices: ['local', 'radius', 'tacacs', 'ldap']
       policy:
-        description: Check local credentials after remote auth failure.
+        description: |
+          Fallback policy for remote authentication.
+          C(remotedownlocal) falls back to local only when the remote server is unreachable.
+          C(remotelocal) always checks local credentials after remote authentication.
         type: str
-      tacacsMethod:
+        choices: ['remotedownlocal', 'remotelocal']
+      timeout:
+        type: int
+        description: Timeout in seconds for remote authentication server responses (1-3600).
+      radiusMethod:
         type: str
-        description: tacacs method
-      tacacsService:
-        type: str
-        description: tacacs service
-      ldapBaseDN:
-        type: str
-        description: ldap base dn
-      ldapBindDN:
-        type: str
-        description: ldap bind dn
-      ldapIgnoreReferals:
-        type: bool
-        description: ldap ignore referrals
-      ldapUsernameAttribute:
-        type: str
-        description: ldap username
-      ldapGroupMembershipAttribute:
-        type: str
-        description: ldap group member
+        description: RADIUS authentication method.
+        choices: ['pap', 'mschapv2']
       radiusAuthenticationServers:
         type: list
-        description: radius auth servers
+        description: List of RADIUS authentication servers.
         elements: dict
         suboptions:
           id:
             type: str
-            description: id
+            description: Server ID (read-only, assigned by device).
           hostname:
             type: str
-            description: hostname or address
+            description: Hostname or IP address of the RADIUS server.
           port:
             type: int
-            description: radius port
+            description: UDP port for the RADIUS server.
       radiusAccountingServers:
         type: list
-        description: radius accounting server
+        description: List of RADIUS accounting servers.
         elements: dict
         suboptions:
           id:
             type: str
-            description: id
+            description: Server ID (read-only, assigned by device).
           hostname:
             type: str
-            description: hostname or address
+            description: Hostname or IP address of the RADIUS accounting server.
           port:
             type: int
-            description: port
-      tacacsAuthenticationServers:
-        type: list
-        description: tacacs auth server
-        elements: dict
-        suboptions:
-          id:
-            type: str
-            description: id
-          hostname:
-            type: str
-            description: hostname or address
-          port:
-            type: int
-            description: port
-      ldapAuthenticationServers:
-        type: list
-        description: ldap auth server
-        elements: dict
-        suboptions:
-          id:
-            type: str
-            description: id
-          hostname:
-            type: str
-            description: hostname or address
-          port:
-            type: int
-            description: port
+            description: UDP port for the RADIUS accounting server.
+      radiusAccountingEnabled:
+        type: bool
+        description: Enable RADIUS accounting.
+      radiusRequireMessageAuthenticator:
+        type: bool
+        description: Require the Message-Authenticator attribute in RADIUS responses.
       radiusPassword:
         type: str
-        description: radius password
+        description: Shared secret for RADIUS servers. Write-only; not returned by the device.
+      tacacsMethod:
+        type: str
+        description: TACACS+ authentication method.
+        choices: ['pap', 'chap', 'login']
+      tacacsService:
+        type: str
+        description: TACACS+ service type (default C(raccess)).
+      tacacsAuthenticationServers:
+        type: list
+        description: List of TACACS+ authentication servers.
+        elements: dict
+        suboptions:
+          id:
+            type: str
+            description: Server ID (read-only, assigned by device).
+          hostname:
+            type: str
+            description: Hostname or IP address of the TACACS+ server.
+          port:
+            type: int
+            description: TCP port for the TACACS+ server.
+      tacacsAccountingEnabled:
+        type: bool
+        description: Enable TACACS+ accounting.
       tacacsPassword:
         type: str
-        description: tacacs password
+        description: Shared secret for TACACS+ servers. Write-only; not returned by the device.
+      ldapBaseDN:
+        type: str
+        description: Base DN for LDAP searches.
+      ldapBindDN:
+        type: str
+        description: Bind DN used for LDAP authentication.
       ldapBindPassword:
         type: str
-        description: ldap bind password
+        description: Password for the LDAP bind DN. Write-only; not returned by the device.
+      ldapAuthenticationServers:
+        type: list
+        description: List of LDAP authentication servers.
+        elements: dict
+        suboptions:
+          id:
+            type: str
+            description: Server ID (read-only, assigned by device).
+          hostname:
+            type: str
+            description: Hostname or IP address of the LDAP server.
+          port:
+            type: int
+            description: TCP port for the LDAP server.
+      ldapUsernameAttribute:
+        type: str
+        description: LDAP attribute used to match the username.
+      ldapGroupMembershipAttribute:
+        type: str
+        description: LDAP attribute used to determine group membership.
+      ldapIgnoreReferrals:
+        type: bool
+        description: Ignore LDAP referrals during authentication.
+      ldapSslMode:
+        type: str
+        description: SSL/TLS mode for LDAP connections.
+        choices: ['ldap_only', 'ldaps_preferred', 'ldaps_only']
+      ldapSslIgnoreCertErrors:
+        type: bool
+        description: Ignore SSL certificate validation errors for LDAP connections.
+      ldapSslCaCert:
+        type: str
+        description: CA certificate (PEM format) used to validate the LDAP server's SSL certificate.
   state:
     description:
     - The state of the configuration after module completion.
+    - C(merged) merges the provided config into the existing config; want fields overwrite have fields.
+    - C(replaced) and C(overridden) fully replace the auth config with the provided values.
+    - C(gathered) retrieves the current auth configuration from the device.
+    - C(rendered) generates commands without connecting to a device.
     type: str
     choices:
     - merged
@@ -132,32 +169,103 @@ options:
     - gathered
     - rendered
     default: merged
+notes:
+  - Diff output shows the expected configuration change based on the commands
+    generated. It does not reflect the actual device state after execution,
+    which may differ due to device-side normalization or concurrent changes.
+    Use state=gathered after a run to verify the actual device state.
+  - Sensitive fields (radiusPassword, tacacsPassword, ldapBindPassword) are
+    write-only; they are never returned by the device and will not appear in
+    diff or after output. Specifying a sensitive field always triggers a PUT
+    even if no other fields changed.
+  - Server list fields (radiusAuthenticationServers, radiusAccountingServers,
+    tacacsAuthenticationServers, ldapAuthenticationServers) always trigger a
+    PUT when specified in merged state, since device-assigned id fields prevent
+    reliable idempotency comparison.
 """
 
 EXAMPLES = """
+- name: Gather auth facts
+  opengear.ng.facts:
+    gather_network_resources:
+      - auth
+  register: auth_facts
+
+- name: Show auth facts
+  ansible.builtin.debug:
+    var: auth_facts
+
+- name: Set local authentication
+  opengear.ng.auth:
+    config:
+      mode: local
+    state: merged
+
 - name: Configure LDAP authentication
   opengear.ng.auth:
     config:
       mode: ldap
-      policy: remotelocal
+      policy: remotedownlocal
       timeout: 10
       ldapBaseDN: dc=example,dc=com
       ldapBindDN: cn=admin,dc=example,dc=com
-      ldapIgnoreReferrals: true
-      ldapUsernameAttribute: uid
-      ldapGroupMembershipAttribute: gid
       ldapBindPassword: "{{ ldap_bind_password }}"
+      ldapUsernameAttribute: uid
+      ldapGroupMembershipAttribute: memberOf
+      ldapIgnoreReferrals: false
+      ldapSslMode: ldaps_preferred
       ldapAuthenticationServers:
         - hostname: ldap.example.com
           port: 389
         - hostname: ldap2.example.com
           port: 389
-    state: merged
+    state: replaced
 
-- name: Gather auth facts
-  opengear.ng.facts:
-    gather_network_resources:
-      - auth
+- name: Configure RADIUS authentication
+  opengear.ng.auth:
+    config:
+      mode: radius
+      policy: remotedownlocal
+      timeout: 10
+      radiusMethod: pap
+      radiusPassword: "{{ radius_secret }}"
+      radiusAccountingEnabled: true
+      radiusRequireMessageAuthenticator: false
+      radiusAuthenticationServers:
+        - hostname: radius.example.com
+          port: 1812
+      radiusAccountingServers:
+        - hostname: radius.example.com
+          port: 1813
+    state: replaced
+
+- name: Configure TACACS+ authentication
+  opengear.ng.auth:
+    config:
+      mode: tacacs
+      policy: remotedownlocal
+      timeout: 10
+      tacacsMethod: pap
+      tacacsService: raccess
+      tacacsPassword: "{{ tacacs_secret }}"
+      tacacsAccountingEnabled: true
+      tacacsAuthenticationServers:
+        - hostname: tacacs.example.com
+          port: 49
+    state: replaced
+
+- name: Preview LDAP config change without applying (check mode)
+  opengear.ng.auth:
+    config:
+      mode: ldap
+      ldapBaseDN: dc=example,dc=com
+      ldapUsernameAttribute: uid
+      ldapAuthenticationServers:
+        - hostname: ldap.example.com
+          port: 389
+    state: merged
+  check_mode: true
+  diff: true
 """
 
 RETURN = """
@@ -173,6 +281,12 @@ commands:
   description: The set of commands pushed to the remote device.
   returned: always
   type: list
+diff:
+  description: |
+    The expected configuration change. Sensitive fields are omitted.
+    This reflects the commands generated, not the actual device state.
+  returned: when changed and diff mode is enabled
+  type: dict
 """
 
 from ansible.module_utils.basic import AnsibleModule

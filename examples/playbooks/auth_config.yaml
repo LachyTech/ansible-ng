@@ -1,11 +1,96 @@
 ---
+- name: Example playbook for managing authentication configuration
+  hosts: opengear
+  gather_facts: false
 
-- name: Configure Auth Config
-  hosts: all
-  connection: httpapi
   tasks:
-    - name: Change Auth
+    - name: Gather auth facts
+      opengear.ng.facts:
+        gather_network_resources:
+          - auth
+      register: auth_facts
+
+    - name: Show current auth configuration
+      ansible.builtin.debug:
+        var: auth_facts
+
+    # Reset to local authentication
+    - name: Set local authentication
       opengear.ng.auth:
         config:
           mode: local
         state: merged
+
+    # Configure LDAP authentication (replaces entire auth config)
+    - name: Configure LDAP authentication
+      opengear.ng.auth:
+        config:
+          mode: ldap
+          policy: remotedownlocal
+          timeout: 10
+          ldapBaseDN: "{{ ldap_base_dn | default('dc=example,dc=com') }}"
+          ldapBindDN: "{{ ldap_bind_dn | default('cn=admin,dc=example,dc=com') }}"
+          ldapBindPassword: "{{ ldap_bind_password }}"
+          ldapUsernameAttribute: uid
+          ldapGroupMembershipAttribute: memberOf
+          ldapIgnoreReferrals: false
+          ldapSslMode: ldaps_preferred
+          ldapAuthenticationServers:
+            - hostname: "{{ ldap_server_primary }}"
+              port: 389
+            - hostname: "{{ ldap_server_secondary | default(omit) }}"
+              port: 389
+        state: replaced
+      when: auth_mode | default('local') == 'ldap'
+
+    # Configure RADIUS authentication (replaces entire auth config)
+    - name: Configure RADIUS authentication
+      opengear.ng.auth:
+        config:
+          mode: radius
+          policy: remotedownlocal
+          timeout: 10
+          radiusMethod: pap
+          radiusPassword: "{{ radius_secret }}"
+          radiusAccountingEnabled: true
+          radiusRequireMessageAuthenticator: false
+          radiusAuthenticationServers:
+            - hostname: "{{ radius_server_primary }}"
+              port: 1812
+          radiusAccountingServers:
+            - hostname: "{{ radius_server_primary }}"
+              port: 1813
+        state: replaced
+      when: auth_mode | default('local') == 'radius'
+
+    # Configure TACACS+ authentication (replaces entire auth config)
+    - name: Configure TACACS+ authentication
+      opengear.ng.auth:
+        config:
+          mode: tacacs
+          policy: remotedownlocal
+          timeout: 10
+          tacacsMethod: pap
+          tacacsService: raccess
+          tacacsPassword: "{{ tacacs_secret }}"
+          tacacsAccountingEnabled: true
+          tacacsAuthenticationServers:
+            - hostname: "{{ tacacs_server_primary }}"
+              port: 49
+        state: replaced
+      when: auth_mode | default('local') == 'tacacs'
+
+    # Preview a config change without applying it
+    - name: Preview LDAP timeout change (check + diff mode)
+      opengear.ng.auth:
+        config:
+          timeout: 30
+        state: merged
+      check_mode: true
+      diff: true
+      register: auth_preview
+
+    - name: Show previewed change
+      ansible.builtin.debug:
+        var: auth_preview.diff
+      when: auth_preview.changed

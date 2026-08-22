@@ -19,7 +19,7 @@ class AuthFacts(object):
     Retrieves and parses auth configuration facts from Opengear devices.
     """
 
-    def __init__(self, module, subspec='config', options='options'):
+    def __init__(self, module, subspec="config", options="options"):
         self._module = module
         self.argument_spec = AuthArgs.argument_spec
         spec = deepcopy(self.argument_spec)
@@ -34,10 +34,10 @@ class AuthFacts(object):
         self.generated_spec = utils.generate_dict(facts_argument_spec)
 
     def get_device_data(self, connection):
-        return connection.get(None, 'auth')['auth']
+        return connection.get(None, "auth")["auth"]
 
     def populate_facts(self, connection, ansible_facts, data=None):
-        """ Populate the facts for auth
+        """Populate the facts for auth
         :param connection: the device connection
         :param ansible_facts: Facts dictionary
         :param data: previously collected conf
@@ -52,15 +52,15 @@ class AuthFacts(object):
         if data:
             obj.update(self.render_config(self.generated_spec, data))
 
-        ansible_facts['ansible_network_resources'].pop('auth', None)
+        ansible_facts["ansible_network_resources"].pop("auth", None)
         facts = {}
         if obj:
-            params = utils.validate_config(self.argument_spec, {'config': obj})
-            facts['auth'] = params['config']
+            params = utils.validate_config(self.argument_spec, {"config": obj})
+            facts["auth"] = params["config"]
         else:
-            facts['auth'] = {}
+            facts["auth"] = {}
 
-        ansible_facts['ansible_network_resources'].update(facts)
+        ansible_facts["ansible_network_resources"].update(facts)
         return ansible_facts
 
     def render_config(self, spec, conf):
@@ -73,8 +73,8 @@ class AuthFacts(object):
         :rtype: dictionary
         :returns: The generated config
         """
-        config = deepcopy(spec)
-        for option in config.keys():
+        config = {}
+        for option in spec.keys():
             if option in conf:
                 config[option] = conf[option]
         return utils.remove_empties(config)
