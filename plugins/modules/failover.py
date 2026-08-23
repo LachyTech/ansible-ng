@@ -36,26 +36,34 @@ options:
         type: bool
       probe_physif:
         description:
-          - Network interface through which the device probes I(probe_address).
-          - Required when failover is enabled.
+          - The interface through which the device will attempt to probe I(probe_address).
+          - A failover event occurs if I(probe_address) is not reachable on this interface.
+          - Optional when failover is disabled.
         type: str
       probe_address:
-        description: Primary probe address; an IPv4/IPv6 address or hostname.
+        description:
+          - Probe address; an IPv4 address, IPv6 address, or hostname.
+          - A failover event occurs if this address is not reachable via I(probe_physif).
+          - Be aware that hostnames may not resolve during failover depending on DNS settings.
         type: str
       probe_address_2:
         description:
-          - Secondary probe address probed if I(probe_address) is unreachable.
-          - A failover event occurs only if this address is also unreachable.
+          - Secondary probe address; an IPv4 address, IPv6 address, or hostname.
+          - If configured, this address is probed via I(probe_physif) when I(probe_address)
+            is not reachable. A failover event occurs if this address is also not reachable.
+          - Be aware that hostnames may not resolve during failover depending on DNS settings.
         type: str
       dormant_dns:
         description:
-          - When C(true), DNS is suppressed on the failover interface during normal
-            operation and restored when failover is active.
+          - When C(true), DNS is not configured for the failover interface during normal
+            operation. During failover, DNS is restored on that interface.
         type: bool
       failover_physif:
         description:
-          - Interface to fail over to. Defaults to C(wwan0) on the device when
-            failover is enabled and this field is omitted.
+          - The network interface to fail over to.
+          - If this field is omitted when failover is enabled, it defaults to C(wwan0)
+            for compatibility with older releases.
+          - Optional when failover is disabled.
         type: str
   state:
     description:
