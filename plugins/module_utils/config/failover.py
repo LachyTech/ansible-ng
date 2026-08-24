@@ -107,7 +107,7 @@ class Failover(ConfigBase):
                 result['after'] = changed_failover_facts
                 if self._module._diff:
                     # Compute diff from command body so it is accurate in both
-                    # check mode and real mode without an extra API round-trip
+                    # check mode and real mode
                     cmd_body = commands[0]['data']['failover_settings'] if commands else {}
                     diff_after = dict_merge(deepcopy(existing_failover_facts), cmd_body)
                     result['diff'] = {

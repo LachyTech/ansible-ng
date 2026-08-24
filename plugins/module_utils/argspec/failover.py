@@ -21,9 +21,7 @@ class FailoverArgs(object):  # pylint: disable=R0903
         "config": {
             "type": "dict",
             "options": {
-                "enabled": {
-                    "type": "bool",
-                },
+                "enabled": {"type": "bool"},
                 "probe_physif": {"type": "str"},
                 "probe_address": {"type": "str"},
                 "probe_address_2": {"type": "str"},

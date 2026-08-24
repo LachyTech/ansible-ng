@@ -1,8 +1,8 @@
 ---
+- name: Example playbook to configure failover with cell modem
+  hosts: opengear
+  gather_facts: false
 
-- name: Configure failover
-  hosts: all
-  connection: httpapi
   tasks:
     - name: Gather current failover settings
       opengear.ng.failover:

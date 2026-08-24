@@ -28,7 +28,7 @@ author:
   - Opengear (@opengear)
 options:
   config:
-    description: Desired failover configuration.
+    description: Manage configuration of failover behavior on Opengear devices
     type: dict
     suboptions:
       enabled:
