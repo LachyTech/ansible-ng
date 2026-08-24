@@ -1,0 +1,52 @@
+---
+name: Integration Tests (PR)
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      pr_ref:
+        description: 'Ref to test — e.g. refs/pull/123/head for a fork PR, or leave empty for current branch'
+        required: false
+        default: ''
+
+jobs:
+  integration-test:
+    name: Integration Tests
+    runs-on: [self-hosted, ansible, integration-tests]
+    # All PRs require manual approval via the integration-tests environment
+    # to serialise access to the single shared test device.
+    environment: ${{ github.event_name == 'pull_request_target' && 'integration-tests' || '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # workflow_dispatch: use provided ref, or the branch the dispatch was triggered on
+          # pull_request_target: always use the PR head SHA (not the base branch default)
+          ref: ${{ inputs.pr_ref || github.event.pull_request.head.sha || github.sha }}
+
+      - name: Build inventory
+        run: |
+          cat > inventory.networking << EOF
+          [opengear]
+          test-om ansible_host=${{ secrets.OM2200_DEVICE_HOST }} \
+                  ansible_user=${{ secrets.OM2200_DEVICE_USER }} \
+                  ansible_password=${{ secrets.OM2200_DEVICE_PASSWORD }}
+          [opengear:vars]
+          ansible_connection=httpapi
+          ansible_network_os=opengear.ng.http_api
+          ansible_httpapi_use_ssl=true
+          ansible_httpapi_validate_certs=false
+          EOF
+
+      - name: Run integration tests
+        uses: ./.github/actions/integration-test
+        with:
+          python-version: "3.11"
+          inventory-file: inventory.networking
+
+      - name: Cleanup inventory
+        if: always()
+        shell: bash
+        run: rm -f inventory.networking

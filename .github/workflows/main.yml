@@ -9,12 +9,6 @@ on:
       - release/**
   pull_request:
   workflow_dispatch:
-    inputs:
-      run_integration:
-        description: 'Run integration tests'
-        type: boolean
-        required: false
-        default: false
 
 jobs:
   lint:
@@ -80,14 +74,13 @@ jobs:
     needs: [lint, sanity, unit-test]
     runs-on: [self-hosted, ansible, integration-tests]
     environment: integration-tests
-    # automatically run on main branch and release branches with opengear repo only
-    # manual trigger with run_integration
+    # automatically run on main and release branches only (post-merge validation)
+    # PR integration tests are handled by integration.yml
     if: |
-      (github.event_name == 'push' && github.repository == 'opengear/ansible-ng' && (
-         github.ref == 'refs/heads/main' ||
-         startsWith(github.ref, 'refs/heads/release/')
-       )) ||
-      (github.event_name == 'workflow_dispatch' && inputs.run_integration)
+      github.event_name == 'push' && github.repository == 'opengear/ansible-ng' && (
+        github.ref == 'refs/heads/main' ||
+        startsWith(github.ref, 'refs/heads/release/')
+      )
     steps:
       - name: Checkout
         uses: actions/checkout@v4
