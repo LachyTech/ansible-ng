@@ -24,12 +24,31 @@ from ansible_collections.opengear.ng.plugins.module_utils.utils.utils import (
     to_list,
 )
 
-# Fields that identify a conn but must not appear in PUT/POST request bodies
+# id and name are identifier-only fields — the device auto-assigns name on POST
 _BODY_EXCLUDE = frozenset({"id", "name"})
 
 
 def _strip_body_fields(data):
     return {k: v for k, v in data.items() if k not in _BODY_EXCLUDE}
+
+
+def _find_conn_by_ip(data, id_conn_map):
+    """Find an existing conn by IP address when name/id lookup fails.
+
+    The device auto-assigns conn names on POST so name-based lookup fails on
+    subsequent runs.  Matching by static IP address provides a stable fallback
+    identity that survives device renames.
+    """
+    target_v4 = (data.get("ipv4_static_settings") or {}).get("address")
+    target_v6 = (data.get("ipv6_static_settings") or {}).get("address")
+    if not target_v4 and not target_v6:
+        return None
+    for conn_id, conn in id_conn_map.items():
+        if target_v4 and (conn.get("ipv4_static_settings") or {}).get("address") == target_v4:
+            return conn_id
+        if target_v6 and (conn.get("ipv6_static_settings") or {}).get("address") == target_v6:
+            return conn_id
+    return None
 
 
 class Conns(ConfigBase):
@@ -241,6 +260,8 @@ class Conns(ConfigBase):
             conn = deepcopy(conn)
             conn_id = find_instance_id(name_id_map, "name", conn)
             data = remove_empties(conn)
+            if conn_id is None:
+                conn_id = _find_conn_by_ip(data, id_conn_map)
             if conn_id in id_conn_map:
                 have_clean = _strip_body_fields(remove_empties(id_conn_map[conn_id]))
                 want_clean = _strip_body_fields(data)
@@ -292,6 +313,9 @@ class Conns(ConfigBase):
             data = remove_empties(conn)
             conn_id = find_instance_id(name_id_map, "name", data)
 
+            if conn_id is None:
+                conn_id = _find_conn_by_ip(data, id_conn_map)
+
             if conn_id in id_conn_map:
                 have_clean = _strip_body_fields(remove_empties(id_conn_map[conn_id]))
                 want_clean = _strip_body_fields(data)
@@ -318,7 +342,10 @@ class Conns(ConfigBase):
         commands = []
         for conn in want:
             conn = deepcopy(conn)
+            data = remove_empties(conn)
             conn_id = find_instance_id(name_id_map, "name", conn)
+            if conn_id is None:
+                conn_id = _find_conn_by_ip(data, id_conn_map)
             if not conn_id or conn_id not in id_conn_map:
                 continue
             command = command_builder(None, "conns/", conn_id)

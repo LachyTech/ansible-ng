@@ -22,24 +22,34 @@ version_added: '1.0.0'
 short_description: Manages network connection configuration for Opengear devices
 description:
   - Manages network connection configuration for Opengear devices.
-  - Connections are identified by I(id) or I(name). Provide at least one.
-    I(name) is read-only on existing connections and is used only for look-up.
+  - The device auto-assigns a I(name) and I(id) when a connection is created.
+    Use I(gathered) state to discover these values after creation.
+  - Connections are matched on subsequent runs using I(id) first, then I(name).
+    If neither matches, the module falls back to matching by static IP address
+    (I(ipv4_static_settings.address) or I(ipv6_static_settings.address)).
+    This fallback is essential for idempotent I(merged), I(replaced), and
+    I(deleted) operations when the device-assigned name is not known.
+  - For I(deleted) state, always include the IP address alongside the name
+    to ensure the correct connection is found even if the device-assigned name
+    differs from what was specified at creation time.
 author:
   - Opengear (@opengear)
 options:
   config:
-    description: List of network connection configurations.
+    description: Manages network connection configuration for Opengear devices.
     type: list
     elements: dict
     suboptions:
       id:
         type: str
-        description: Unique identifier of the connection (e.g. C(default-conn-1)).
+        description: Unique identifier of the connection (e.g. C(system_net_conns-1)).
       name:
         type: str
         description:
-          - Connection name. Read-only on existing connections; used for
-            identification when I(id) is not supplied.
+          - Connection name. The device auto-assigns this on creation; it cannot
+            be set by the user. Provide the device-assigned name (from I(gathered)
+            state) for reliable look-up. If the name does not match any existing
+            connection, the module falls back to matching by IP address.
       description:
         type: str
         description: Human-readable label for the connection.
@@ -117,7 +127,17 @@ options:
 """
 
 EXAMPLES = """
-- name: Configure a static IPv4 connection
+# The device auto-assigns a name to each connection on creation.
+# Use 'gathered' state to discover the device-assigned name and id.
+# For idempotent merged/replaced/deleted operations, the module falls back
+# to matching by IP address when the name does not match any existing connection.
+
+- name: Gather connection facts to discover device-assigned names
+  opengear.ng.conns:
+    state: gathered
+  register: conns_facts
+
+- name: Configure a static IPv4 connection (idempotent via IP fallback)
   opengear.ng.conns:
     config:
       - name: default-conn-1
@@ -152,15 +172,16 @@ EXAMPLES = """
           gateway: 2001:db8::fffe
     state: merged
 
-- name: Delete a connection by name
+# Always include the IP address when deleting a static connection.
+# If the device-assigned name differs from what you specified at creation,
+# the IP address is used as a fallback to locate the correct connection.
+- name: Delete a static connection by IP address
   opengear.ng.conns:
     config:
-      - name: default-conn-2
+      - name: default-conn-1
+        ipv4_static_settings:
+          address: 192.168.1.2
     state: deleted
-
-- name: Gather current connection facts
-  opengear.ng.conns:
-    state: gathered
 
 - name: Gather connection facts via facts module
   opengear.ng.facts:
