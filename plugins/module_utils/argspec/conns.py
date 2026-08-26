@@ -19,10 +19,19 @@ class ConnsArgs(object):  # pylint: disable=R0903
 
     argument_spec = {
         "config": {
+            "type": "list",
             "elements": "dict",
             "options": {
                 "id": {"type": "str"},
+                "name": {"type": "str"},
+                "description": {"type": "str"},
+                "mode": {
+                    "type": "str",
+                    "choices": ["static", "ipv6_static", "dhcp", "ipv6_automatic"],
+                },
+                "physif": {"type": "str"},
                 "ipv4_static_settings": {
+                    "type": "dict",
                     "options": {
                         "address": {"type": "str"},
                         "broadcast": {"type": "str"},
@@ -31,25 +40,22 @@ class ConnsArgs(object):  # pylint: disable=R0903
                         "gateway": {"type": "str"},
                         "netmask": {"type": "str"},
                     },
-                    "type": "dict",
                 },
                 "ipv6_static_settings": {
+                    "type": "dict",
                     "options": {
                         "address": {"type": "str"},
                         "dns1": {"type": "str"},
                         "dns2": {"type": "str"},
                         "gateway": {"type": "str"},
-                        "prefix_length": {"type": "str"},
+                        "prefix_length": {"type": "int"},
                     },
-                    "type": "dict",
                 },
-                "mode": {"type": "str"},
-                "name": {"type": "str"},
-                "physif": {"type": "str"},
             },
-            "type": "list",
         },
         "state": {
+            "type": "str",
+            "default": "merged",
             "choices": [
                 "merged",
                 "replaced",
@@ -58,7 +64,5 @@ class ConnsArgs(object):  # pylint: disable=R0903
                 "gathered",
                 "rendered",
             ],
-            "default": "merged",
-            "type": "str",
         },
     }  # pylint: disable=C0301
