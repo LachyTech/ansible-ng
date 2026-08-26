@@ -15,6 +15,8 @@ jobs:
   integration-test:
     name: Integration Tests
     runs-on: [self-hosted, ansible, integration-tests]
+    # Only run on upstream repository
+    if: github.repository == 'opengear/ansible-ng'
     # All PRs require manual approval via the integration-tests environment
     # to serialise access to the single shared test device.
     environment: ${{ github.event_name == 'pull_request_target' && 'integration-tests' || '' }}
