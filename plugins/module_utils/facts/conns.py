@@ -19,7 +19,7 @@ class ConnsFacts(object):
     Retrieves and parses network connection configuration facts from Opengear devices.
     """
 
-    def __init__(self, module, subspec='config', options='options'):
+    def __init__(self, module, subspec="config", options="options"):
         self._module = module
         self.argument_spec = ConnsArgs.argument_spec
         spec = deepcopy(self.argument_spec)
@@ -34,10 +34,10 @@ class ConnsFacts(object):
         self.generated_spec = utils.generate_dict(facts_argument_spec)
 
     def get_device_data(self, connection):
-        return connection.get(None, 'conns')['conns']
+        return connection.get(None, "conns")["conns"]
 
     def populate_facts(self, connection, ansible_facts, data=None):
-        """ Populate the facts for conns
+        """Populate the facts for conns
         :param connection: the device connection
         :param ansible_facts: Facts dictionary
         :param data: previously collected conf
@@ -55,13 +55,13 @@ class ConnsFacts(object):
                 if obj:
                     objs.append(obj)
 
-        ansible_facts['ansible_network_resources'].pop('conns', None)
+        ansible_facts["ansible_network_resources"].pop("conns", None)
         facts = {}
         if objs:
-            params = utils.validate_config(self.argument_spec, {'config': objs})
-            facts['conns'] = params['config']
+            params = utils.validate_config(self.argument_spec, {"config": objs})
+            facts["conns"] = params["config"]
 
-        ansible_facts['ansible_network_resources'].update(facts)
+        ansible_facts["ansible_network_resources"].update(facts)
         return ansible_facts
 
     def render_config(self, spec, conf):

@@ -10,9 +10,9 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 ANSIBLE_METADATA = {
-    'metadata_version': '1.0',
-    'status': ['preview'],
-    'supported_by': 'opengear'
+    "metadata_version": "1.0",
+    "status": ["preview"],
+    "supported_by": "opengear",
 }
 
 DOCUMENTATION = """
@@ -21,100 +21,148 @@ module: conns
 version_added: '1.0.0'
 short_description: Manages network connection configuration for Opengear devices
 description:
-  - Manages network connection configuration for Opengear devices
+  - Manages network connection configuration for Opengear devices.
+  - Connections are identified by I(id) or I(name). Provide at least one.
+    I(name) is read-only on existing connections and is used only for look-up.
 author:
   - Opengear (@opengear)
 options:
   config:
-    description: Manage network connection configuration for Opengear devices
+    description: List of network connection configurations.
     type: list
     elements: dict
     suboptions:
       id:
         type: str
-        description: id
+        description: Unique identifier of the connection (e.g. C(default-conn-1)).
       name:
         type: str
-        description: name
+        description:
+          - Connection name. Read-only on existing connections; used for
+            identification when I(id) is not supplied.
+      description:
+        type: str
+        description: Human-readable label for the connection.
       mode:
         type: str
-        description: mode
+        description: IP configuration mode for the connection.
+        choices: [static, ipv6_static, dhcp, ipv6_automatic]
       physif:
         type: str
-        description: physical interface of conn
+        description:
+          - Physical interface this connection is attached to.
+            Accepts a device name (e.g. C(net1)) or an interface ID
+            (e.g. C(system_net_physifs-1)).
       ipv4_static_settings:
         type: dict
-        description: ipv4 static setting
+        description: IPv4 static address settings. Used when I(mode) is C(static).
         suboptions:
+          address:
+            type: str
+            description: IPv4 address.
           netmask:
             type: str
-            description: subnet mask
-          address:
-            type: str
-            description: ip address
+            description: Subnet mask (e.g. C(255.255.255.0)).
           broadcast:
             type: str
-            description: broadcast address
+            description: Broadcast address.
           gateway:
             type: str
-            description: gateway address
+            description: Default gateway address.
           dns1:
             type: str
-            description: primary dns server
+            description:
+              - Primary DNS server. Deprecated since October 2021.
+                Use I(physif.dns.nameservers) instead.
           dns2:
             type: str
-            description: secondary dns server
+            description:
+              - Secondary DNS server. Deprecated since October 2021.
+                Use I(physif.dns.nameservers) instead.
       ipv6_static_settings:
         type: dict
-        description: ipv6 static settings
+        description: IPv6 static address settings. Used when I(mode) is C(ipv6_static).
         suboptions:
-          prefix_length:
-            type: str
-            description: prefix length
           address:
             type: str
-            description: ipv6 address
+            description: IPv6 address.
+          prefix_length:
+            type: int
+            description: Prefix length (e.g. C(64)).
           gateway:
             type: str
-            description: ipv6 gateway address
+            description: IPv6 default gateway address.
           dns1:
             type: str
-            description: primary dns server
+            description:
+              - Primary DNS server. Deprecated since October 2021.
+                Use I(physif.dns.nameservers) instead.
           dns2:
             type: str
-            description: secondary dns server
+            description:
+              - Secondary DNS server. Deprecated since October 2021.
+                Use I(physif.dns.nameservers) instead.
   state:
     description:
-    - The state of the configuration after module completion.
+      - The state of the configuration after module completion.
     type: str
     choices:
-    - merged
-    - replaced
-    - overridden
-    - deleted
-    - gathered
-    - rendered
+      - merged
+      - replaced
+      - overridden
+      - deleted
+      - gathered
+      - rendered
     default: merged
 """
 
 EXAMPLES = """
-- name: Configure a network connection
+- name: Configure a static IPv4 connection
   opengear.ng.conns:
     config:
-      - description: static-ipv4-net1
+      - name: default-conn-1
+        description: Static management connection
         mode: static
         physif: net1
         ipv4_static_settings:
-          netmask: "255.255.255.0"
-          address: "192.168.1.2"
-          broadcast: "192.168.1.255"
-          gateway: "192.168.1.1"
-      - description: dynamic-ipv6-net1
-        mode: ipv6_automatic
-        physif: net1
+          address: 192.168.1.2
+          netmask: 255.255.255.0
+          broadcast: 192.168.1.255
+          gateway: 192.168.1.1
     state: merged
 
-- name: Gather connection facts
+- name: Configure a DHCP connection
+  opengear.ng.conns:
+    config:
+      - name: default-conn-2
+        description: DHCP connection on net2
+        mode: dhcp
+        physif: net2
+    state: merged
+
+- name: Configure a static IPv6 connection
+  opengear.ng.conns:
+    config:
+      - name: default-conn-1
+        mode: ipv6_static
+        physif: net1
+        ipv6_static_settings:
+          address: 2001:db8::1
+          prefix_length: 64
+          gateway: 2001:db8::fffe
+    state: merged
+
+- name: Delete a connection by name
+  opengear.ng.conns:
+    config:
+      - name: default-conn-2
+    state: deleted
+
+- name: Gather current connection facts
+  opengear.ng.conns:
+    state: gathered
+
+- name: Gather connection facts via facts module
   opengear.ng.facts:
     gather_network_resources:
       - conns
@@ -146,14 +194,13 @@ def main():
 
     :returns: the result form module invocation
     """
-    module = AnsibleModule(argument_spec=ConnsArgs.argument_spec,
-                           supports_check_mode=True)
+    module = AnsibleModule(
+        argument_spec=ConnsArgs.argument_spec, supports_check_mode=True
+    )
 
     result = Conns(module).execute_module()
-    for warning in result.pop('warnings', []):
-        module.warn(warning)
     module.exit_json(**result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

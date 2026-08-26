@@ -1,19 +1,112 @@
 ---
+# Example playbook: opengear.ng.conns
+#
+# physif references: use the physif id (e.g. system_net_physifs-1) or device
+# name (e.g. net1) as returned by opengear.ng.physifs gathered facts.
+#
+# dns1/dns2 in static settings are deprecated since 10/2021.
+# Use opengear.ng.physifs dns.nameservers instead.
 
-- name: Configure Conns
+- name: Configure network connections
   hosts: all
   connection: httpapi
   gather_facts: false
   tasks:
-    - name: Add conn
+
+    # ── Gather facts ──────────────────────────────────────────────────────────
+
+    - name: Gather all connection facts
+      opengear.ng.conns:
+        state: gathered
+      register: conns_facts
+
+    - name: Print gathered facts
+      ansible.builtin.debug:
+        var: conns_facts.gathered
+
+    # ── Merged: add or update connections ─────────────────────────────────────
+
+    - name: Configure static IPv4 connection on net1
+      opengear.ng.conns:
+        config:
+          - name: default-conn-1
+            description: Primary management connection
+            mode: static
+            physif: system_net_physifs-1
+            ipv4_static_settings:
+              address: 192.168.1.100
+              netmask: 255.255.255.0
+              gateway: 192.168.1.254
+              broadcast: 192.168.1.255
+        state: merged
+
+    - name: Configure DHCP connection on net1
+      opengear.ng.conns:
+        config:
+          - name: default-conn-2
+            description: DHCP fallback on net1
+            mode: dhcp
+            physif: system_net_physifs-1
+        state: merged
+
+    - name: Configure IPv6 automatic connection on net1
+      opengear.ng.conns:
+        config:
+          - name: v6-dyn-n1-conn
+            description: IPv6 automatic on net1
+            mode: ipv6_automatic
+            physif: system_net_physifs-1
+        state: merged
+
+    - name: Configure static IPv6 connection with prefix_length as int
+      opengear.ng.conns:
+        config:
+          - name: v6-static-n2-conn
+            description: Static IPv6 on net2
+            mode: ipv6_static
+            physif: system_net_physifs-2
+            ipv6_static_settings:
+              address: "2001:db8::100"
+              prefix_length: 64
+              gateway: "2001:db8::1"
+        state: merged
+
+    # ── Replaced: set exact config for a connection ───────────────────────────
+
+    - name: Replace static connection — only specified fields are sent
       opengear.ng.conns:
         config:
           - name: default-conn-1
             mode: static
             physif: system_net_physifs-1
             ipv4_static_settings:
+              address: 192.168.1.200
               netmask: 255.255.255.0
-              address: 192.168.0.1
+              gateway: 192.168.1.254
+        state: replaced
+
+    # ── Deleted: remove a connection ──────────────────────────────────────────
+
+    - name: Delete a connection by name
+      opengear.ng.conns:
+        config:
+          - name: v6-static-n2-conn
+        state: deleted
+
+    # ── Overridden: enforce exact set of connections ──────────────────────────
+
+    - name: Override all connections — delete any not in this list
+      opengear.ng.conns:
+        config:
+          - name: default-conn-1
+            description: Primary management connection
+            mode: static
+            physif: system_net_physifs-1
+            ipv4_static_settings:
+              address: 192.168.1.100
+              netmask: 255.255.255.0
+              gateway: 192.168.1.254
+              broadcast: 192.168.1.255
           - name: default-conn-2
             mode: dhcp
             physif: system_net_physifs-1
@@ -24,18 +117,20 @@
             mode: dhcp
             physif: system_net_physifs-2
           - name: v6-dyn-n2-conn
-            physif: system_net_physifs-2
             mode: ipv6_automatic
-          - name: conn-6
-            mode: static
-            physif: system_net_physifs-1
-            ipv4_static_settings:
-              netmask: 255.255.255.0
-              address: 192.168.0.21
-          - mode: static
-            physif: system_net_physifs-1
-            ipv4_static_settings:
-              netmask: 255.255.255.0
-              address: 192.168.0.20
-        state:
-          overridden
+            physif: system_net_physifs-2
+        state: overridden
+
+    # ── Rendered: generate commands without a device ─────────────────────────
+
+    - name: Render commands for a new connection (no device needed)
+      opengear.ng.conns:
+        config:
+          - mode: dhcp
+            physif: system_net_physifs-2
+        state: rendered
+      register: rendered_result
+
+    - name: Print rendered commands
+      ansible.builtin.debug:
+        var: rendered_result.rendered
