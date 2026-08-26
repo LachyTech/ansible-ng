@@ -1,31 +1,110 @@
 ---
+# Example playbook for managing physical interfaces (physifs)
+#
+# Physifs are identified by 'id' (e.g. system_net_physifs-1) or 'name'
+# (e.g. init_net1). Run the facts example at the bottom first to discover
+# the ids and names on your device.
+#
+# Note: only aggregate interfaces (bond, bridge, vlan) can be deleted.
+# Ethernet and cellular interfaces are permanent and cannot be removed.
 
-- name: Configure physif
-  hosts: all
-  connection: httpapi
+- name: Example playbook for managing physical interfaces
+  hosts: opengear
+  gather_facts: false
+
   tasks:
-    - name: Add physif
+    - name: Gather physifs facts
+      opengear.ng.facts:
+        gather_network_resources:
+          - physifs
+      register: facts_result
+
+    - name: Show physifs facts
+      ansible.builtin.debug:
+        var: facts_result
+
+    # Update an ethernet interface description and MTU, preserving all other
+    # settings already on the device (merged state).
+    - name: Configure ethernet interface net1
       opengear.ng.physifs:
         config:
           - name: init_net1
             enabled: true
+            description: Primary management - 1G Copper
             mtu: 1500
-            description: NET1 - 1G Copper/SFP
-            media: ethernet
             ethernet_setting:
               link_speed: auto
+        state: merged
+
+    # Configure DNS servers on an interface.
+    - name: Set DNS servers on net2
+      opengear.ng.physifs:
+        config:
           - name: init_net2
+            dns:
+              nameservers:
+                - 8.8.8.8
+                - 8.8.4.4
+              search_domains:
+                - example.com
+        state: merged
+
+    # Configure a cellular interface with dual-SIM failover settings.
+    # Sims are identified by slot number; only specified slots are updated
+    # when using merged state.
+    - name: Configure cellular interface with dual SIM
+      opengear.ng.physifs:
+        config:
+          - name: init_cellular
             enabled: true
-            mtu: 1500
-            description: NET2 - 1G Copper/SFP
-            media: ethernet
-            ethernet_setting:
-              link_speed: auto
+            description: Primary cellular interface (LTE)
+            cellular_setting:
+              active_sim: 1
+              sim_failover_policy: on_disconnect
+              sim_failback_policy: never
+              sims:
+                - slot: 1
+                  apn: internet
+                  iptype: IPv4v6
+                  fail_probe_address: 8.8.8.8
+                  fail_probe_interval: 60
+                  fail_probe_count: 3
+                - slot: 2
+                  apn: backup.internet
+                  iptype: IPv4v6
+        state: merged
+
+    # Create a bond interface (POST — no matching name on device).
+    - name: Create a bond interface
+      opengear.ng.physifs:
+        config:
           - enabled: true
-            mtu: 1500
-            description: A new physif.
             media: bond
+            device: bnd0
+            description: Bonded uplink
             slaves:
               - net1
-        state:
-          overridden
+              - net2
+            bond_setting:
+              mode: active-backup
+        state: merged
+
+    # Replace the full configuration of a specific interface.
+    # Fields not specified here are cleared (replaced semantics).
+    - name: Replace net1 configuration
+      opengear.ng.physifs:
+        config:
+          - name: init_net1
+            enabled: true
+            description: Primary management - replaced
+            mtu: 1500
+            ethernet_setting:
+              link_speed: auto
+        state: replaced
+
+    # Delete an aggregate interface (bond/bridge/vlan only).
+    - name: Delete the bond interface
+      opengear.ng.physifs:
+        config:
+          - name: init_bond0
+        state: deleted
