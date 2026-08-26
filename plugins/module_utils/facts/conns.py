@@ -34,7 +34,21 @@ class ConnsFacts(object):
         self.generated_spec = utils.generate_dict(facts_argument_spec)
 
     def get_device_data(self, connection):
-        return connection.get(None, "conns")["conns"]
+        conns = connection.get(None, "conns")["conns"]
+        try:
+            physifs = connection.get(None, "physifs")["physifs"]
+            id_to_device = {
+                p["id"]: p["device"]
+                for p in physifs
+                if p.get("id") and p.get("device")
+            }
+        except Exception:
+            id_to_device = {}
+        for conn in conns:
+            physif = conn.get("physif")
+            if physif and physif in id_to_device:
+                conn["physif"] = id_to_device[physif]
+        return conns
 
     def populate_facts(self, connection, ansible_facts, data=None):
         """Populate the facts for conns

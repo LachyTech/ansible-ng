@@ -1,8 +1,17 @@
 ---
 # Example playbook: opengear.ng.conns
 #
-# physif references: use the physif id (e.g. system_net_physifs-1) or device
-# name (e.g. net1) as returned by opengear.ng.physifs gathered facts.
+# Naming: the device auto-assigns a name and id to each connection on creation.
+# Use 'gathered' state to discover device-assigned names before referencing them.
+# For merged/replaced/deleted, the module falls back to matching by IP address
+# when the specified name does not match any existing connection — this makes
+# operations idempotent even if the device-assigned name is not known.
+#
+# Deleting static connections: always include the IP address alongside the name
+# so the IP fallback can locate the connection if the name does not match.
+#
+# physif references: use the device name (e.g. net1). Gathered facts normalise
+# the physif field to device name; both forms are accepted by the API.
 #
 # dns1/dns2 in static settings are deprecated since 10/2021.
 # Use opengear.ng.physifs dns.nameservers instead.
@@ -32,7 +41,7 @@
           - name: default-conn-1
             description: Primary management connection
             mode: static
-            physif: system_net_physifs-1
+            physif: net1
             ipv4_static_settings:
               address: 192.168.1.100
               netmask: 255.255.255.0
@@ -46,7 +55,7 @@
           - name: default-conn-2
             description: DHCP fallback on net1
             mode: dhcp
-            physif: system_net_physifs-1
+            physif: net1
         state: merged
 
     - name: Configure IPv6 automatic connection on net1
@@ -55,7 +64,7 @@
           - name: v6-dyn-n1-conn
             description: IPv6 automatic on net1
             mode: ipv6_automatic
-            physif: system_net_physifs-1
+            physif: net1
         state: merged
 
     - name: Configure static IPv6 connection with prefix_length as int
@@ -64,7 +73,7 @@
           - name: v6-static-n2-conn
             description: Static IPv6 on net2
             mode: ipv6_static
-            physif: system_net_physifs-2
+            physif: net2
             ipv6_static_settings:
               address: "2001:db8::100"
               prefix_length: 64
@@ -78,7 +87,7 @@
         config:
           - name: default-conn-1
             mode: static
-            physif: system_net_physifs-1
+            physif: net1
             ipv4_static_settings:
               address: 192.168.1.200
               netmask: 255.255.255.0
@@ -86,11 +95,15 @@
         state: replaced
 
     # ── Deleted: remove a connection ──────────────────────────────────────────
+    # Include the IP address for static connections so the module can locate
+    # the connection by IP if the device-assigned name does not match.
 
-    - name: Delete a connection by name
+    - name: Delete a static connection by name and IP
       opengear.ng.conns:
         config:
           - name: v6-static-n2-conn
+            ipv6_static_settings:
+              address: "2001:db8::100"
         state: deleted
 
     # ── Overridden: enforce exact set of connections ──────────────────────────
@@ -101,7 +114,7 @@
           - name: default-conn-1
             description: Primary management connection
             mode: static
-            physif: system_net_physifs-1
+            physif: net1
             ipv4_static_settings:
               address: 192.168.1.100
               netmask: 255.255.255.0
@@ -109,16 +122,16 @@
               broadcast: 192.168.1.255
           - name: default-conn-2
             mode: dhcp
-            physif: system_net_physifs-1
+            physif: net1
           - name: v6-dyn-n1-conn
             mode: ipv6_automatic
-            physif: system_net_physifs-1
+            physif: net1
           - name: v4-dyn-n2-conn
             mode: dhcp
-            physif: system_net_physifs-2
+            physif: net2
           - name: v6-dyn-n2-conn
             mode: ipv6_automatic
-            physif: system_net_physifs-2
+            physif: net2
         state: overridden
 
     # ── Rendered: generate commands without a device ─────────────────────────
@@ -127,7 +140,7 @@
       opengear.ng.conns:
         config:
           - mode: dhcp
-            physif: system_net_physifs-2
+            physif: net2
         state: rendered
       register: rendered_result
 

@@ -148,7 +148,7 @@ class TestConnsModule(TestModuleBase):
         self.execute_module(changed=True, commands=commands)
 
     def test_conns_merged_strips_id_and_name_from_body(self):
-        """id and name are never included in PUT/POST bodies."""
+        """id and name are never included in PUT or POST bodies."""
         set_module_args({
             'config': [
                 {
@@ -162,6 +162,53 @@ class TestConnsModule(TestModuleBase):
         body = result['commands'][0]['data']['conn']
         self.assertNotIn('id', body)
         self.assertNotIn('name', body)
+
+    def test_conns_merged_idempotent_by_ip_when_name_differs(self):
+        """Conn found by IP address is idempotent even when user name differs from device name."""
+        set_module_args({
+            'config': [
+                {
+                    'name': 'my-custom-name',
+                    'mode': 'static',
+                    'physif': 'system_net_physifs-1',
+                    'description': 'Primary static IPv4',
+                    'ipv4_static_settings': {
+                        'address': '192.168.1.100',
+                        'netmask': '255.255.255.0',
+                        'gateway': '192.168.1.254',
+                        'broadcast': '192.168.1.255',
+                    },
+                }
+            ],
+            'state': 'merged',
+        })
+        # Device has this conn as 'default-conn-1' — user's name doesn't match,
+        # but IP address matches, so module should detect it and be idempotent.
+        self.execute_module(changed=False, commands=[])
+
+    def test_conns_merged_put_by_ip_when_name_differs(self):
+        """Conn found by IP generates PUT (not POST) when config differs."""
+        set_module_args({
+            'config': [
+                {
+                    'name': 'my-custom-name',
+                    'mode': 'static',
+                    'physif': 'system_net_physifs-1',
+                    'description': 'Updated description',
+                    'ipv4_static_settings': {
+                        'address': '192.168.1.100',
+                        'netmask': '255.255.255.0',
+                        'gateway': '192.168.1.254',
+                        'broadcast': '192.168.1.255',
+                    },
+                }
+            ],
+            'state': 'merged',
+        })
+        result = self.execute_module(changed=True)
+        cmd = result['commands'][0]
+        self.assertEqual(cmd['method'], 'PUT')
+        self.assertEqual(cmd['path'], 'conns/system_net_conns-1')
 
     def test_conns_merged_preserves_device_fields(self):
         """Merged sends the full merged body, preserving unspecified device fields."""
@@ -241,6 +288,26 @@ class TestConnsModule(TestModuleBase):
         commands = [
             {
                 'path': 'conns/system_net_conns-2',
+                'data': None,
+                'method': 'DELETE',
+            }
+        ]
+        self.execute_module(changed=True, commands=commands)
+
+    def test_conns_deleted_by_ip_when_name_differs(self):
+        """Delete falls back to IP match when user name differs from device-assigned name."""
+        set_module_args({
+            'config': [
+                {
+                    'name': 'my-custom-name',
+                    'ipv4_static_settings': {'address': '192.168.1.100'},
+                }
+            ],
+            'state': 'deleted',
+        })
+        commands = [
+            {
+                'path': 'conns/system_net_conns-1',
                 'data': None,
                 'method': 'DELETE',
             }
