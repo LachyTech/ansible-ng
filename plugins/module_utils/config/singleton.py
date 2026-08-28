@@ -8,6 +8,8 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
+import json
+
 from ansible.module_utils.connection import ConnectionError
 
 from ansible_collections.opengear.ng.plugins.module_utils.config.base import ConfigBase
@@ -99,6 +101,11 @@ class SingletonConfigBase(ConfigBase):
             result['before'] = existing_facts
             if result['changed']:
                 result['after'] = changed_facts
+                if self._module._diff:
+                    result['diff'] = {
+                        'before': json.dumps(existing_facts, indent=4) + '\n',
+                        'after': json.dumps(changed_facts, indent=4) + '\n',
+                    }
         elif self.state == 'gathered':
             result['gathered'] = changed_facts
 

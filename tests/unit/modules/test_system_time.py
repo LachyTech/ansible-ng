@@ -7,6 +7,8 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
+import json
+
 from ansible_collections.opengear.ng.tests.unit.compat.mock import patch
 from ansible_collections.opengear.ng.plugins.modules import system_time
 from ansible_collections.opengear.ng.tests.unit.modules.utils import set_module_args
@@ -111,3 +113,40 @@ class TestSystemTimeModule(TestModuleBase):
         result = self.execute_module(changed=True)
         self.assertNotIn('time', result['before'])
         self.assertNotIn('time', result.get('after', {}))
+
+    # --- diff mode ---
+
+    def test_diff_mode_when_changed(self):
+        """diff key is present when _ansible_diff is set and a change is made"""
+        set_module_args({
+            '_ansible_diff': True,
+            'config': {'timezone': 'Etc/UTC'},
+            'state': 'merged',
+        })
+        result = self.execute_module(changed=True)
+        self.assertIn('diff', result)
+        before = json.loads(result['diff']['before'])
+        after = json.loads(result['diff']['after'])
+        self.assertIn('timezone', before)
+        self.assertIn('timezone', after)
+        self.assertNotIn('time', before)
+        self.assertNotIn('time', after)
+
+    def test_no_diff_when_not_requested(self):
+        """diff key is absent when _ansible_diff is not set"""
+        set_module_args({
+            'config': {'timezone': 'Etc/UTC'},
+            'state': 'merged',
+        })
+        result = self.execute_module(changed=True)
+        self.assertNotIn('diff', result)
+
+    def test_no_diff_when_idempotent(self):
+        """diff key is absent when nothing changed"""
+        set_module_args({
+            '_ansible_diff': True,
+            'config': {'timezone': 'Australia/Brisbane'},
+            'state': 'merged',
+        })
+        result = self.execute_module(changed=False)
+        self.assertNotIn('diff', result)
