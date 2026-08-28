@@ -9,6 +9,10 @@
         gather_network_resources:
           - system_config
 
+    - name: Show current system facts
+      ansible.builtin.debug:
+        var: ansible_network_resources.system_config
+
     - name: Configure admin info
       opengear.ng.system:
         config:
@@ -21,7 +25,7 @@
     - name: Configure login banner
       opengear.ng.system:
         config:
-          banner: "Authorized access only. All activity is monitored and logged."
+          banner: "Authorized access only. All activity is monitored and logged.\n"
         state: merged
 
     - name: Configure SSH port
@@ -44,17 +48,4 @@
         config:
           fips:
             enabled: true
-        state: merged
-
-    - name: Configure cell reliability test
-      opengear.ng.system:
-        config:
-          cell_reliability_test:
-            enabled: true
-            period: 300
-            test_url:
-              - https://www.example.com
-            signal_strength_threshold:
-              lower: 20
-              upper: 80
         state: merged
