@@ -9,6 +9,10 @@
         gather_network_resources:
           - system_diskspace
 
+    - name: Set system diskspace fact
+      ansible.builtin.set_fact:
+        system_diskspace: "{{ ansible_facts['network_resources']['system_diskspace'] }}"
+
     - name: Show disk space for all mounts
       ansible.builtin.debug:
-        var: ansible_network_resources.system_diskspace
+        var: system_diskspace
