@@ -9,15 +9,19 @@
         gather_network_resources:
           - system_info
 
+    - name: Set system info fact
+      ansible.builtin.set_fact:
+        system_info: "{{ ansible_facts['network_resources']['system_info'] }}"
+
     - name: Show system info
       ansible.builtin.debug:
-        var: ansible_network_resources.system_info
+        var: system_info
 
     - name: Show firmware version
       ansible.builtin.debug:
-        msg: "Firmware version: {{ ansible_network_resources.system_info.system_versions.firmware_version }}"
+        msg: "Firmware version: {{ system_info.system_versions.firmware_version }}"
 
     - name: Show cellular firmware info
       ansible.builtin.debug:
-        var: ansible_network_resources.system_info.cellfw_info
-      when: ansible_network_resources.system_info.has_cellular
+        var: system_info.cellfw_info
+      when: system_info.has_cellular
