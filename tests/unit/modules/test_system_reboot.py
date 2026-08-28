@@ -38,3 +38,13 @@ class TestSystemRebootModule(TestModuleBase):
             {'path': 'system/reboot', 'data': None, 'method': 'POST'}
         ]
         self.execute_module(changed=True, commands=commands)
+
+    def test_check_mode_skips_post(self):
+        """In check mode the POST is not sent but changed is still reported"""
+        set_module_args({'_ansible_check_mode': True})
+
+        commands = [
+            {'path': 'system/reboot', 'data': None, 'method': 'POST'}
+        ]
+        self.execute_module(changed=True, commands=commands)
+        self.connection.return_value.send_request.assert_not_called()
