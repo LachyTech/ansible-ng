@@ -20,3 +20,4 @@ class SystemFacts(SingletonFacts):
     resource_name = 'system_config'
     args = SystemArgs
     field_map = FIELD_MAP
+    optional_fields = ('cell_reliability_test', 'cellular_logging')
