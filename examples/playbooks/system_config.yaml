@@ -14,7 +14,7 @@
         var: ansible_network_resources.system_config
 
     - name: Configure admin info
-      opengear.ng.system:
+      opengear.ng.system_config:
         config:
           admin_info:
             hostname: om-device-01
@@ -23,19 +23,19 @@
         state: merged
 
     - name: Configure login banner
-      opengear.ng.system:
+      opengear.ng.system_config:
         config:
           banner: "Authorized access only. All activity is monitored and logged.\n"
         state: merged
 
     - name: Configure SSH port
-      opengear.ng.system:
+      opengear.ng.system_config:
         config:
           ssh_port: 22
         state: merged
 
     - name: Configure session timeouts
-      opengear.ng.system:
+      opengear.ng.system_config:
         config:
           session_timeout:
             cli_timeout: 30
@@ -44,7 +44,7 @@
         state: merged
 
     - name: Enable FIPS compliance
-      opengear.ng.system:
+      opengear.ng.system_config:
         config:
           fips:
             enabled: true

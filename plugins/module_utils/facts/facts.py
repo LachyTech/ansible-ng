@@ -18,7 +18,7 @@ from ansible_collections.opengear.ng.plugins.module_utils.facts.physifs import P
 from ansible_collections.opengear.ng.plugins.module_utils.facts.ports import PortsFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.services import ServicesFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.static_routes import StaticRoutesFacts
-from ansible_collections.opengear.ng.plugins.module_utils.facts.system import SystemFacts
+from ansible_collections.opengear.ng.plugins.module_utils.facts.system_config import SystemConfigFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.system_authorized_keys import SystemAuthorizedKeysFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.system_diskspace import SystemDiskspaceFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.system_firmware_upgrade import SystemFirmwareUpgradeFacts
@@ -47,7 +47,7 @@ FACT_RESOURCE_SUBSETS = dict(
     services=ServicesFacts,
     static_routes=StaticRoutesFacts,
     system_authorized_keys=SystemAuthorizedKeysFacts,
-    system_config=SystemFacts,
+    system_config=SystemConfigFacts,
     system_diskspace=SystemDiskspaceFacts,
     system_firmware_upgrade=SystemFirmwareUpgradeFacts,
     system_info=SystemInfoFacts,

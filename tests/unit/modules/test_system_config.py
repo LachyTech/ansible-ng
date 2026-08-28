@@ -10,23 +10,23 @@ __metaclass__ = type
 import json
 
 from ansible_collections.opengear.ng.tests.unit.compat.mock import patch
-from ansible_collections.opengear.ng.plugins.modules import system
+from ansible_collections.opengear.ng.plugins.modules import system_config
 from ansible_collections.opengear.ng.tests.unit.modules.utils import set_module_args
 from .module_test_base import TestModuleBase, load_fixture
 
 
-class TestSystemModule(TestModuleBase):
+class TestSystemConfigModule(TestModuleBase):
 
-    module = system
+    module = system_config
 
     def setUp(self):
-        super(TestSystemModule, self).setUp()
+        super(TestSystemConfigModule, self).setUp()
         self.maxDiff = None
 
         # Mock the per-field device fetch used to build the current settings.
         self.mock_get_device_data = patch(
             "ansible_collections.opengear.ng.plugins.module_utils."
-            "facts.system.SystemFacts.get_device_data"
+            "facts.system_config.SystemConfigFacts.get_device_data"
         )
         self.get_device_data = self.mock_get_device_data.start()
 
@@ -37,7 +37,7 @@ class TestSystemModule(TestModuleBase):
         self.connection = self.mock_connection.start()
 
     def tearDown(self):
-        super(TestSystemModule, self).tearDown()
+        super(TestSystemConfigModule, self).tearDown()
         self.mock_get_device_data.stop()
         self.mock_connection.stop()
 

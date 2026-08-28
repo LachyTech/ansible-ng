@@ -11,7 +11,7 @@ __metaclass__ = type
 
 class SystemArgs(object):  # pylint: disable=R0903
     """
-    Argument specification for the system module.
+    Argument specification for the system_config module.
     """
 
     def __init__(self, **kwargs):

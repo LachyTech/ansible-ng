@@ -31,7 +31,7 @@ The Opengear NG collection supports the following Opengear product families:
 | opengear.ng.ports                   | Manage serial port configuration.                                                                    |
 | opengear.ng.services                | Manage system service configuration.                                                                 |
 | opengear.ng.static_routes           | Manage static route configuration.                                                                   |
-| opengear.ng.system                  | Manage general system configuration including admin info, banner, FIPS, and session timeouts.        |
+| opengear.ng.system_config           | Manage general system configuration including admin info, banner, FIPS, and session timeouts.        |
 | opengear.ng.system_authorized_keys  | Manage SSH authorized keys for system access.                                                        |
 | opengear.ng.system_factory_reset    | Erase device configuration, restoring the appliance to factory defaults.                             |
 | opengear.ng.system_firmware_upgrade | Manage firmware upgrades on Opengear devices.                                                        |
