@@ -41,5 +41,11 @@ class SystemFactoryReset(ConfigBase):
             except ConnectionError as exc:
                 if not exc.args[0].startswith('Expecting value:'):
                     raise exc
+        result['warnings'].append(
+            "This operation will reset the device to factory defaults and reboot it. "
+            "A password change may be required on first login if not handled by ZTP. "
+            "See examples/playbooks/system_factory_reset.yaml for the recommended "
+            "post-reset reconnection pattern."
+        )
         result['changed'] = True
         return result

@@ -32,29 +32,36 @@
         (status.gathered | default({})).get('upgrade_status', {}).get('state', '') not in ['pending', 'running']
       retries: 10
       delay: 10
-      when: upgrade.changed
+      when: upgrade.changed and not ansible_check_mode
 
-    # Wait for device to come back online after reboot
+    # Wait for device to go offline then come back online after reboot
+    - name: Wait for device to start rebooting
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host }}"
+        port: 443
+        state: stopped
+        timeout: 120
+      when: upgrade.changed and not ansible_check_mode
+
     - name: Wait for device to come back online
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host }}"
+        port: 443
+        state: started
+        timeout: 420
+      when: upgrade.changed and not ansible_check_mode
+
+    - name: Verify upgrade succeeded
       opengear.ng.system_firmware_upgrade:
         state: gathered
       register: final_status
-      failed_when: false
-      until: final_status.gathered is defined
-      retries: 30
-      delay: 10
-      when: upgrade.changed
-
-    - name: Verify upgrade succeeded
-      ansible.builtin.assert:
-        that:
-          - final_status.gathered.upgrade_status is none or
-            final_status.gathered.upgrade_status.state != 'error'
-        fail_msg: "Firmware upgrade failed: {{ final_status.gathered.upgrade_status.error_message | default('unknown error') }}"
-      when: upgrade.changed
+      when: upgrade.changed and not ansible_check_mode
 
     - name: Verify firmware version
       ansible.builtin.assert:
         that:
+          - final_status.gathered.upgrade_status is none or
+            final_status.gathered.upgrade_status.state != 'error'
           - final_status.gathered.current_version == "25.11.4"
-      when: upgrade.changed
+        fail_msg: "Firmware upgrade failed: {{ final_status.gathered.upgrade_status.error_message | default('unknown error') }}"
+      when: upgrade.changed and not ansible_check_mode
