@@ -10,6 +10,8 @@ __metaclass__ = type
 
 from copy import deepcopy
 
+from ansible.module_utils.connection import ConnectionError
+
 from ansible_collections.opengear.ng.plugins.module_utils.utils import utils
 
 
@@ -34,6 +36,9 @@ class SingletonFacts(object):
     args = None
     field_map = {}
     gather_exclude = ()
+    # Fields that may not be present on all hardware; silently omitted on
+    # ConnectionError rather than failing the entire gather.
+    optional_fields = ()
 
     def __init__(self, module, subspec='config', options='options'):
         self._module = module
@@ -55,7 +60,13 @@ class SingletonFacts(object):
         for field, (endpoint, _body_path) in self.field_map.items():
             if field in self.gather_exclude:
                 continue
-            data[field] = connection.get(None, endpoint)
+            if field in self.optional_fields:
+                try:
+                    data[field] = connection.get(None, endpoint)
+                except ConnectionError:
+                    pass
+            else:
+                data[field] = connection.get(None, endpoint)
         return data
 
     def populate_facts(self, connection, ansible_facts, data=None):
