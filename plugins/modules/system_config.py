@@ -17,7 +17,7 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = """
 ---
-module: system
+module: system_config
 version_added: '1.0.0'
 short_description: Manages general system settings on Opengear devices
 description:
@@ -139,7 +139,7 @@ options:
 
 EXAMPLES = """
 - name: Configure system information
-  opengear.ng.system:
+  opengear.ng.system_config:
     config:
       banner: "Authorized access only"
       ssh_port: 22
@@ -150,7 +150,7 @@ EXAMPLES = """
     state: merged
 
 - name: Configure admin info
-  opengear.ng.system:
+  opengear.ng.system_config:
     config:
       admin_info:
         hostname: om-device-01
@@ -180,8 +180,8 @@ commands:
 """
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.opengear.ng.plugins.module_utils.argspec.system import SystemArgs
-from ansible_collections.opengear.ng.plugins.module_utils.config.system import System
+from ansible_collections.opengear.ng.plugins.module_utils.argspec.system_config import SystemArgs
+from ansible_collections.opengear.ng.plugins.module_utils.config.system_config import SystemConfig
 
 
 def main():
@@ -193,7 +193,7 @@ def main():
     module = AnsibleModule(argument_spec=SystemArgs.argument_spec,
                            supports_check_mode=True)
 
-    result = System(module).execute_module()
+    result = SystemConfig(module).execute_module()
     for warning in result.pop('warnings', []):
         module.warn(warning)
     module.exit_json(**result)

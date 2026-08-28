@@ -8,11 +8,11 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-from ansible_collections.opengear.ng.plugins.module_utils.argspec.system import FIELD_MAP
+from ansible_collections.opengear.ng.plugins.module_utils.argspec.system_config import FIELD_MAP
 from ansible_collections.opengear.ng.plugins.module_utils.config.singleton import SingletonConfigBase
 
 
-class System(SingletonConfigBase):
+class SystemConfig(SingletonConfigBase):
     """
     Manages configuration of general system settings on Opengear devices
     (banner, hostname, SSH port, session timeouts and admin info).

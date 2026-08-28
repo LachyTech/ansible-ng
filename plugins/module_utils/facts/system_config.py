@@ -8,11 +8,11 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-from ansible_collections.opengear.ng.plugins.module_utils.argspec.system import FIELD_MAP, SystemArgs
+from ansible_collections.opengear.ng.plugins.module_utils.argspec.system_config import FIELD_MAP, SystemArgs
 from ansible_collections.opengear.ng.plugins.module_utils.facts.singleton import SingletonFacts
 
 
-class SystemFacts(SingletonFacts):
+class SystemConfigFacts(SingletonFacts):
     """
     Retrieves and parses scalar system settings facts from Opengear devices.
     """
