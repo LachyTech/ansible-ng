@@ -32,7 +32,9 @@ options:
       time:
         type: str
         description:
-        - Update the Operations Manager current time.
+        - Update the system time as a formatted string.
+        - "Supported formats: C(HH:MM mmm DD, YYYY) eg. C(14:30 Mar 24, 2022) for 2:30pm 24th March 2022"
+        - "Or: C(HH:MM DD mmm YYYY) eg. C(14:30 24 Mar 2022) for 2:30pm 24th March 2022"
         - This setting is not idempotent; when provided the module always reports
           a change because the device clock advances between fact gathering and
           comparison. It is only pushed when explicitly provided.
@@ -73,7 +75,7 @@ EXAMPLES = """
 - name: Set the system clock
   opengear.ng.system_time:
     config:
-      time: "2026-07-08T09:30:00Z"
+      time: "13:58 Jul 13, 2026"
     state: merged
 
 - name: Gather the timezone (the clock is excluded by default)
