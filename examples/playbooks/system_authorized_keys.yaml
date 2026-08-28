@@ -18,8 +18,8 @@
         config:
           - username: root
             key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKoIUqQoc2qsvbCUcs86mwG+zNSJfNJJVJTXXd1VC1Qm user@example.com"
-          - username: admin
-            key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIRon8Z3Zk5q1WMhDqJcAuM3lGt7bNvXkPmQcFwYeUoHz ops@example.com"
+          - username: root
+            key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJCk99Y46hST5DmGuhFnvqbW0oak0gT5sLwY/7HuUxfq ops@example.com"
         state: merged
 
     - name: Replace all system authorized keys
@@ -32,6 +32,6 @@
     - name: Delete a system authorized key
       opengear.ng.system_authorized_keys:
         config:
-          - username: admin
-            key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIRon8Z3Zk5q1WMhDqJcAuM3lGt7bNvXkPmQcFwYeUoHz ops@example.com"
+          - username: root
+            key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJCk99Y46hST5DmGuhFnvqbW0oak0gT5sLwY/7HuUxfq ops@example.com"
         state: deleted
