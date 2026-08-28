@@ -8,14 +8,41 @@
       opengear.ng.system_factory_reset:
       register: reset
 
-    # Wait for device to come back online after reboot
+    # Wait for the device to go offline (confirms the reboot has started)
+    # before polling for it to come back up. Without this, wait_for may
+    # return immediately if the device hasn't started rebooting yet.
+    - name: Wait for device to start rebooting
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host }}"
+        port: 443
+        state: stopped
+        timeout: 120
+      when: reset.changed
+
     - name: Wait for device to come back online
-      opengear.ng.facts:
-        gather_network_resources:
-          - system_info
-      register: online_check
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host }}"
+        port: 443
+        state: started
+        timeout: 420
+      when: reset.changed
+
+    # After a factory reset the device boots with password "default" and
+    # requires an immediate password change before any login succeeds.
+    # Passing new_password in the same request handles this atomically.
+    #
+    # If ZTP is configured and has already set the password, the "default"
+    # password will be rejected (HTTP 401) and this task is a no-op.
+    - name: Set initial password after factory reset
+      ansible.builtin.uri:
+        url: "https://{{ ansible_host }}/api/v2/sessions/"
+        method: POST
+        body_format: json
+        body:
+          username: "{{ ansible_user }}"
+          password: default
+          new_password: "{{ ansible_password }}"
+        validate_certs: false
+        status_code: [200, 401]
       failed_when: false
-      until: online_check.ansible_facts is defined
-      retries: 30
-      delay: 10
       when: reset.changed

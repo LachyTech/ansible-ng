@@ -62,74 +62,41 @@ notes:
 """
 
 EXAMPLES = """
-- name: Upgrade firmware to version 25.11.0 using a URL
+- name: Gather firmware facts
   opengear.ng.system_firmware_upgrade:
-    config:
-      version: "25.11.0"
-      firmware_image: "{{ firmware_image_url }}"
-    state: merged
-  register: upgrade
+    state: gathered
+  register: firmware
 
-- name: Upgrade firmware using a local image file
+- name: Upgrade firmware using a local image
   opengear.ng.system_firmware_upgrade:
     config:
-      version: "25.11.0"
+      version: "25.11.4"
       firmware_image: "/tmp/firmware.raucb"
     state: merged
   register: upgrade
 
-- name: Upgrade firmware with config erase
+- name: Upgrade firmware from a URL
   opengear.ng.system_firmware_upgrade:
     config:
-      version: "25.11.0"
-      firmware_image: "/tmp/firmware.raucb"
-      erase_config: true
+      version: "25.11.4"
+      firmware_image: "https://example.com/firmware.raucb"
     state: merged
-  register: upgrade
 
 - name: Upgrade firmware ignoring version check
   opengear.ng.system_firmware_upgrade:
     config:
-      version: "25.11.0"
-      firmware_image: "/tmp/firmware.raucb"
+      version: "25.11.4"
+      firmware_image: "{{ firmware_image_path }}"
       ignore_version: true
     state: merged
-  register: upgrade
 
-- name: Wait for firmware upgrade to complete
+- name: Upgrade firmware and erase configuration
   opengear.ng.system_firmware_upgrade:
-    state: gathered
-  register: status
-  failed_when: false
-  until: >
-    (status.gathered | default({})).get('upgrade_status', {}).get('state', '') not in ['pending', 'running']
-  retries: 10
-  delay: 10
-  when: upgrade.changed
-
-- name: Wait for device to come back online
-  opengear.ng.system_firmware_upgrade:
-    state: gathered
-  register: final_status
-  failed_when: false
-  until: final_status.gathered is defined
-  retries: 30
-  delay: 10
-  when: upgrade.changed
-
-- name: Verify upgrade succeeded
-  ansible.builtin.assert:
-    that:
-      - final_status.gathered.upgrade_status is none or
-        final_status.gathered.upgrade_status.state != 'error'
-    fail_msg: "Firmware upgrade failed: {{ final_status.gathered.upgrade_status.error_message | default('unknown error') }}"
-  when: upgrade.changed
-
-- name: Verify firmware version
-  assert:
-    that:
-      - final_status.gathered.current_version == "25.11.0"
-  when: upgrade.changed
+    config:
+      version: "25.11.4"
+      firmware_image: "{{ firmware_image_path }}"
+      erase_config: true
+    state: merged
 """
 
 RETURN = """

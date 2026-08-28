@@ -90,12 +90,19 @@ class SystemFirmwareUpgrade(ConfigBase):
                         self._module.warn(f"Firmware upgrade error: {exc}")
                         raise exc
             result['changed'] = True
-            if self._module._diff:
-                want = self._module.params['config']
-                result['diff'] = {
-                    'before': json.dumps({'current_version': existing_facts.get('current_version')}, indent=4) + '\n',
-                    'after': json.dumps({'current_version': want.get('version')}, indent=4) + '\n',
-                }
+        if commands and self._module.params.get('config', {}) and self._module.params['config'].get('erase_config'):
+            warnings.append(
+                "erase_config is set: the device will reset to factory defaults after the upgrade. "
+                "A password change may be required on first login if not handled by ZTP. "
+                "See examples/playbooks/system_firmware_upgrade_erase.yaml for the recommended "
+                "post-upgrade reconnection pattern."
+            )
+        if result['changed'] and self._module._diff:
+            want = self._module.params['config']
+            result['diff'] = {
+                'before': json.dumps({'current_version': existing_facts.get('current_version')}, indent=4) + '\n',
+                'after': json.dumps({'current_version': want.get('version')}, indent=4) + '\n',
+            }
 
         result['commands'] = commands
 

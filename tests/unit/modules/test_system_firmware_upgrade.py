@@ -9,6 +9,7 @@ __metaclass__ = type
 
 import json
 
+from ansible.module_utils import basic
 from ansible_collections.opengear.ng.tests.unit.compat.mock import patch
 from ansible_collections.opengear.ng.plugins.modules import system_firmware_upgrade
 from ansible_collections.opengear.ng.tests.unit.modules.utils import set_module_args
@@ -226,6 +227,71 @@ class TestSystemFirmwareUpgradeModule(TestModuleBase):
 
         result = self.execute_module(changed=False)
         self.assertNotIn('diff', result)
+
+    # --- warnings ---
+
+    def test_erase_config_warning_emitted(self):
+        """A warning is emitted when erase_config is set and an upgrade would occur"""
+        set_module_args({
+            'config': {
+                'version': '25.11.0',
+                'firmware_image': '/tmp/firmware.raucb',
+                'erase_config': True,
+            },
+            'state': 'merged',
+        })
+
+        with patch.object(basic.AnsibleModule, 'warn') as mock_warn:
+            self.execute_module(changed=True)
+        mock_warn.assert_called_once()
+        self.assertIn('erase_config', mock_warn.call_args[0][0])
+
+    def test_erase_config_warning_emitted_in_check_mode(self):
+        """Warning is emitted in check mode — it describes what will happen"""
+        set_module_args({
+            '_ansible_check_mode': True,
+            'config': {
+                'version': '25.11.0',
+                'firmware_image': '/tmp/firmware.raucb',
+                'erase_config': True,
+            },
+            'state': 'merged',
+        })
+
+        with patch.object(basic.AnsibleModule, 'warn') as mock_warn:
+            self.execute_module(changed=True)
+        mock_warn.assert_called_once()
+        self.assertIn('erase_config', mock_warn.call_args[0][0])
+
+    def test_no_erase_warning_without_erase_config(self):
+        """No erase_config warning is emitted for a regular upgrade"""
+        set_module_args({
+            'config': {
+                'version': '25.11.0',
+                'firmware_image': '/tmp/firmware.raucb',
+            },
+            'state': 'merged',
+        })
+
+        with patch.object(basic.AnsibleModule, 'warn') as mock_warn:
+            self.execute_module(changed=True)
+        mock_warn.assert_not_called()
+
+    def test_no_erase_warning_when_idempotent(self):
+        """No erase_config warning is emitted when no upgrade is needed"""
+        set_module_args({
+            'config': {
+                'version': '25.04.0',
+                'firmware_image': '/tmp/firmware.raucb',
+                'erase_config': True,
+            },
+            'state': 'merged',
+        })
+
+        with patch.object(basic.AnsibleModule, 'warn') as mock_warn:
+            self.execute_module(changed=False)
+        erase_warnings = [c for c in mock_warn.call_args_list if 'erase_config' in c[0][0]]
+        self.assertEqual(erase_warnings, [])
 
     # --- gathered ---
     def test_system_firmware_upgrade_gathered(self):

@@ -34,8 +34,9 @@ options: {}
 """
 
 EXAMPLES = """
-- name: Erase device configuration
+- name: Erase device configuration and restore factory defaults
   opengear.ng.system_factory_reset:
+  register: reset
 """
 
 RETURN = """

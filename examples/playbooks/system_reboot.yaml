@@ -21,6 +21,6 @@
       register: online_check
       failed_when: false
       until: online_check["ansible_facts"]["ansible_network_resources"]["system_info"] is defined
-      retries: 30
+      retries: 42
       delay: 10
       when: reboot.changed
