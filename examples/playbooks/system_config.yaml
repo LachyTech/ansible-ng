@@ -1,26 +1,51 @@
 ---
+- name: Example playbook for system configuration
+  hosts: opengear
+  gather_facts: false
 
-- name: System configuration
-  hosts: all
-  connection: httpapi
   tasks:
-    - name: Change Admin Infro
-      opengear.ng.system:
+    - name: Gather system facts
+      opengear.ng.facts:
+        gather_network_resources:
+          - system_config
+
+    - name: Show current system facts
+      ansible.builtin.debug:
+        var: ansible_network_resources.system_config
+
+    - name: Configure admin info
+      opengear.ng.system_config:
         config:
           admin_info:
-            hostname: om1000
-            contact: avankatw@digi.com.au
-            location: AUS
-    - name: Change Timezone
-      opengear.ng.system:
+            hostname: om-device-01
+            contact: netops@example.com
+            location: Server Room A, Rack 3
+        state: merged
+
+    - name: Configure login banner
+      opengear.ng.system_config:
         config:
-          timezone: Australia/Brisbane
-    - name: Add SSH Keys
-      opengear.ng.system:
+          banner: "Authorized access only. All activity is monitored and logged.\n"
+        state: merged
+
+    - name: Configure SSH port
+      opengear.ng.system_config:
         config:
-          system_authorized_keys:
-            - key: "{{ 'rsa key' }}"
-              username: root
-              id: users_ssh_authorized_keys-1
-        state:
-          deleted
+          ssh_port: 22
+        state: merged
+
+    - name: Configure session timeouts
+      opengear.ng.system_config:
+        config:
+          session_timeout:
+            cli_timeout: 30
+            serial_port_timeout: 60
+            webui_timeout: 30
+        state: merged
+
+    - name: Enable FIPS compliance
+      opengear.ng.system_config:
+        config:
+          fips:
+            enabled: true
+        state: merged

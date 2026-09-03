@@ -15,26 +15,30 @@ The Opengear NG collection supports the following Opengear product families:
 - CM81xx
 
 ## Modules
-| Name                             | Description                                                                                          |
-| -------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| opengear.ng.auth                 | Manage remote authentication, authorization, and accounting (AAA) configuration.                     |
-| opengear.ng.conns                | Manage network connection configuration.                                                             |
-| opengear.ng.config_diff          | Compare current device configuration to file.                                                        |
-| opengear.ng.config_export        | Export current device configuration to file.                                                         |
-| opengear.ng.config_import        | Import device configuration from file merging with current device configuration.                     |
-| opengear.ng.config_restore       | Restore device configuration from file.                                                              |
-| opengear.ng.facts                | Gather device information and network resource configuration facts.                                  |
-| opengear.ng.failover             | Manage failover configuration and retrieve failover status.                                          |
-| opengear.ng.firmware_upgrade     | Manage firmware upgrades on Opengear devices.                                                        |
-| opengear.ng.groups               | Manage user group configuration.                                                                     |
-| opengear.ng.pdu                  | Manage PDUs connected to the device, including configuration, monitoring, and control.               |
-| opengear.ng.physifs              | Manage physical network interface configuration.                                                     |
-| opengear.ng.ports                | Manage serial port configuration.                                                                    |
-| opengear.ng.services             | Manage system service configuration.                                                                 |
-| opengear.ng.static_routes        | Manage static route configuration.                                                                   |
-| opengear.ng.system               | Manage device system configuration and retrieve device information.                                  |
-| opengear.ng.user_authorized_keys | Manage configuration of user authorized keys on Opengear devices.                                    |
-| opengear.ng.users                | Manage user configuration.                                                                           |
+| Name                                | Description                                                                                          |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| opengear.ng.auth                    | Manage remote authentication, authorization, and accounting (AAA) configuration.                     |
+| opengear.ng.config_diff             | Compare current device configuration to file.                                                        |
+| opengear.ng.config_export           | Export current device configuration to file.                                                         |
+| opengear.ng.config_import           | Import device configuration from file merging with current device configuration.                     |
+| opengear.ng.config_restore          | Restore device configuration from file.                                                              |
+| opengear.ng.conns                   | Manage network connection configuration.                                                             |
+| opengear.ng.facts                   | Gather device information and network resource configuration facts.                                  |
+| opengear.ng.failover                | Manage failover configuration and retrieve failover status.                                          |
+| opengear.ng.groups                  | Manage user group configuration.                                                                     |
+| opengear.ng.pdu                     | Manage PDUs connected to the device, including configuration, monitoring, and control.               |
+| opengear.ng.physifs                 | Manage physical network interface configuration.                                                     |
+| opengear.ng.ports                   | Manage serial port configuration.                                                                    |
+| opengear.ng.services                | Manage system service configuration.                                                                 |
+| opengear.ng.static_routes           | Manage static route configuration.                                                                   |
+| opengear.ng.system_config           | Manage general system configuration including admin info, banner, FIPS, and session timeouts.        |
+| opengear.ng.system_authorized_keys  | Manage SSH authorized keys for system access.                                                        |
+| opengear.ng.system_factory_reset    | Erase device configuration, restoring the appliance to factory defaults.                             |
+| opengear.ng.system_firmware_upgrade | Manage firmware upgrades on Opengear devices.                                                        |
+| opengear.ng.system_reboot           | Reboot an Opengear appliance.                                                                        |
+| opengear.ng.system_time             | Manage system time and timezone configuration.                                                       |
+| opengear.ng.user_authorized_keys    | Manage configuration of user authorized keys on Opengear devices.                                    |
+| opengear.ng.users                   | Manage user configuration.                                                                           |
 
 ## Connections
 Modules in this collection use the Ansible `httpapi` connection plugin by default
@@ -125,6 +129,38 @@ configuration of an Opengear network device, using the FQCN:
             access_rights: ['web_ui', 'pmshell']
             ports: ['port-1','port-2']
         state: replaced
+```
+
+### Gathering Facts
+
+Use `opengear.ng.facts` with `gather_network_resources` to retrieve device facts. The following subsets are available:
+
+| Subset                   | Description                                                              |
+| ------------------------ | ------------------------------------------------------------------------ |
+| `auth`                   | Remote authentication, authorization, and accounting (AAA) configuration.|
+| `conns`                  | Network connection configuration.                                        |
+| `failover`               | Failover configuration and status.                                       |
+| `groups`                 | User group configuration.                                                |
+| `pdu`                    | PDU configuration and status.                                            |
+| `physifs`                | Physical network interface configuration.                                |
+| `ports`                  | Serial port configuration.                                               |
+| `services`               | System service configuration.                                            |
+| `static_routes`          | Static route configuration.                                              |
+| `system_authorized_keys` | System-level SSH authorized keys.                                        |
+| `system_config`          | General system configuration (admin info, banner, FIPS, session timeouts)|
+| `system_diskspace`       | Disk space facts for all mounts.                                         |
+| `system_firmware_upgrade`| Current firmware version and upgrade status.                             |
+| `system_info`            | Read-only system identity facts (model, serial number, firmware version).|
+| `system_time`            | System time and timezone configuration.                                  |
+| `user_authorized_keys`   | Per-user SSH authorized keys.                                            |
+| `users`                  | User configuration.                                                      |
+
+```yaml
+- name: Gather system information and disk space facts
+  opengear.ng.facts:
+    gather_network_resources:
+      - system_info
+      - system_diskspace
 ```
 
 ### Further Examples

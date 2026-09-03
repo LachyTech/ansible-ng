@@ -1,0 +1,63 @@
+---
+- name: Example playbook for firmware upgrade with configuration erase
+  hosts: opengear
+  gather_facts: false
+
+  tasks:
+    - name: Upgrade firmware and erase configuration
+      opengear.ng.system_firmware_upgrade:
+        config:
+          version: 25.11.4
+          firmware_image: "{{ firmware_image_path }}"
+          ignore_version: true
+          erase_config: true
+        state: merged
+      register: upgrade
+
+    # Wait for device to go offline (confirms reboot has started) then
+    # come back online. Without the stopped check, wait_for may return
+    # immediately if the device hasn't started rebooting yet.
+    #
+    # delegate_to: localhost avoids the httpapi persistent connection, which
+    # dies on reboot and may not recover on its own.
+    - name: Wait for device to start rebooting
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host }}"
+        port: 443
+        state: stopped
+        timeout: 120
+      delegate_to: localhost
+      when: upgrade.changed and not ansible_check_mode
+
+    - name: Wait for device to come back online
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host }}"
+        port: 443
+        state: started
+        timeout: 420
+      delegate_to: localhost
+      when: upgrade.changed and not ansible_check_mode
+
+    - name: Reset the httpapi persistent connection after the reboot
+      ansible.builtin.meta: reset_connection
+
+    # When erase_config is true the device resets to factory defaults,
+    # which means the root password resets to "default" and a forced
+    # password change is required before any login succeeds. Passing
+    # new_password in the same request handles this atomically.
+    #
+    # If ZTP is configured and has already set the password, the "default"
+    # password will be rejected (HTTP 401) and this task is a no-op.
+    - name: Set initial password after erase
+      ansible.builtin.uri:
+        url: "https://{{ ansible_host }}/api/v2/sessions/"
+        method: POST
+        body_format: json
+        body:
+          username: "{{ ansible_user }}"
+          password: default
+          new_password: "{{ ansible_password }}"
+        validate_certs: false
+        status_code: [200, 401]
+      failed_when: false
+      when: upgrade.changed and not ansible_check_mode

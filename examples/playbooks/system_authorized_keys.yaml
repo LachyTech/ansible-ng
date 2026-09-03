@@ -1,0 +1,37 @@
+---
+- name: Example playbook for managing system authorized keys
+  hosts: opengear
+  gather_facts: false
+
+  tasks:
+    - name: Gather system authorized keys facts
+      opengear.ng.facts:
+        gather_network_resources:
+          - system_authorized_keys
+
+    - name: Show current system authorized keys
+      ansible.builtin.debug:
+        var: ansible_network_resources.system_authorized_keys
+
+    - name: Add system authorized keys
+      opengear.ng.system_authorized_keys:
+        config:
+          - username: root
+            key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKoIUqQoc2qsvbCUcs86mwG+zNSJfNJJVJTXXd1VC1Qm user@example.com"
+          - username: root
+            key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJCk99Y46hST5DmGuhFnvqbW0oak0gT5sLwY/7HuUxfq ops@example.com"
+        state: merged
+
+    - name: Replace all system authorized keys
+      opengear.ng.system_authorized_keys:
+        config:
+          - username: root
+            key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKoIUqQoc2qsvbCUcs86mwG+zNSJfNJJVJTXXd1VC1Qm user@example.com"
+        state: replaced
+
+    - name: Delete a system authorized key
+      opengear.ng.system_authorized_keys:
+        config:
+          - username: root
+            key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJCk99Y46hST5DmGuhFnvqbW0oak0gT5sLwY/7HuUxfq ops@example.com"
+        state: deleted

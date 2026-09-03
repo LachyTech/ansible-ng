@@ -1,0 +1,26 @@
+---
+- name: Example playbook for performing device reboot
+  hosts: opengear
+  gather_facts: false
+
+  tasks:
+    - name: Initiate device reboot
+      opengear.ng.system_reboot:
+      register: reboot
+
+    - name: Wait for device to start rebooting
+      ansible.builtin.pause:
+        seconds: 10
+      when: reboot.changed
+
+    # Wait for device to come back online after reboot
+    - name: Wait for device to come back online
+      opengear.ng.facts:
+        gather_network_resources:
+          - system_info
+      register: online_check
+      failed_when: false
+      until: online_check["ansible_facts"]["ansible_network_resources"]["system_info"] is defined
+      retries: 42
+      delay: 10
+      when: reboot.changed

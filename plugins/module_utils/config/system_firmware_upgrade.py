@@ -17,16 +17,16 @@ from ansible_collections.opengear.ng.plugins.module_utils.utils.utils import (
 )
 
 
-class FirmwareUpgrade(ConfigBase):
+class SystemFirmwareUpgrade(ConfigBase):
     """
     Manages firmware upgrade for Opengear devices.
     """
 
     gather_subset = ['!all', '!min']
-    gather_network_resources = ['firmware_upgrade']
+    gather_network_resources = ['system_firmware_upgrade']
 
     def __init__(self, module):
-        super(FirmwareUpgrade, self).__init__(module)
+        super(SystemFirmwareUpgrade, self).__init__(module)
 
     def get_firmware_upgrade_facts(self):
         """Get the current firmware version and upgrade status.
@@ -37,7 +37,7 @@ class FirmwareUpgrade(ConfigBase):
         facts, _warnings = Facts(self._module).get_facts(
             self.gather_subset, self.gather_network_resources
         )
-        return facts['ansible_network_resources'].get('firmware_upgrade', {})
+        return facts['ansible_network_resources'].get('system_firmware_upgrade', {})
 
     def execute_module(self):
         """Execute the module.
@@ -90,12 +90,19 @@ class FirmwareUpgrade(ConfigBase):
                         self._module.warn(f"Firmware upgrade error: {exc}")
                         raise exc
             result['changed'] = True
-            if self._module._diff:
-                want = self._module.params['config']
-                result['diff'] = {
-                    'before': json.dumps({'current_version': existing_facts.get('current_version')}, indent=4) + '\n',
-                    'after': json.dumps({'current_version': want.get('version')}, indent=4) + '\n',
-                }
+        if commands and self._module.params.get('config', {}) and self._module.params['config'].get('erase_config'):
+            warnings.append(
+                "erase_config is set: the device will reset to factory defaults after the upgrade. "
+                "A password change may be required on first login if not handled by ZTP. "
+                "See examples/playbooks/system_firmware_upgrade_erase.yaml for the recommended "
+                "post-upgrade reconnection pattern."
+            )
+        if result['changed'] and self._module._diff:
+            want = self._module.params['config']
+            result['diff'] = {
+                'before': json.dumps({'current_version': existing_facts.get('current_version')}, indent=4) + '\n',
+                'after': json.dumps({'current_version': want.get('version')}, indent=4) + '\n',
+            }
 
         result['commands'] = commands
 

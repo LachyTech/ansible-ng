@@ -8,17 +8,17 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-from ansible_collections.opengear.ng.plugins.module_utils.argspec.firmware_upgrade import FirmwareUpgradeArgs
+from ansible_collections.opengear.ng.plugins.module_utils.argspec.system_firmware_upgrade import SystemFirmwareUpgradeArgs
 
 
-class FirmwareUpgradeFacts(object):
+class SystemFirmwareUpgradeFacts(object):
     """
     Retrieves firmware version and upgrade status facts from Opengear devices.
     """
 
     def __init__(self, module):
         self._module = module
-        self.argument_spec = FirmwareUpgradeArgs.argument_spec
+        self.argument_spec = SystemFirmwareUpgradeArgs.argument_spec
 
     def get_version(self, connection):
         return connection.get(None, 'system/version')['system_version']
@@ -35,9 +35,9 @@ class FirmwareUpgradeFacts(object):
                 'upgrade_status': status if status.get('state') else None,
             }
 
-        ansible_facts['ansible_network_resources'].pop('firmware_upgrade', None)
+        ansible_facts['ansible_network_resources'].pop('system_firmware_upgrade', None)
         facts = {}
         if data:
-            facts['firmware_upgrade'] = data
+            facts['system_firmware_upgrade'] = data
         ansible_facts['ansible_network_resources'].update(facts)
         return ansible_facts

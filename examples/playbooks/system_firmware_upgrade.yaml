@@ -1,0 +1,75 @@
+---
+- name: Example playbook for performing firmware upgrade
+  hosts: opengear
+  gather_facts: false
+
+  tasks:
+    - name: Get firmware facts
+      opengear.ng.system_firmware_upgrade:
+        state: gathered
+      register: result
+
+    - name: Show firmware facts
+      ansible.builtin.debug:
+        var: result.gathered
+
+    - name: Upgrade firmware - accepts local image path or remote URL
+      opengear.ng.system_firmware_upgrade:
+        config:
+          version: 25.11.4
+          firmware_image: "{{ firmware_image_path }}"
+          ignore_version: true
+        state: merged
+      register: upgrade
+
+    # Poll until device goes offline or upgrade completes
+    - name: Wait for firmware upgrade to complete
+      opengear.ng.system_firmware_upgrade:
+        state: gathered
+      register: status
+      failed_when: false
+      until: >
+        (status.gathered | default({})).get('upgrade_status', {}).get('state', '') not in ['pending', 'running']
+      retries: 10
+      delay: 10
+      when: upgrade.changed and not ansible_check_mode
+
+    # Wait for device to go offline then come back online after reboot.
+    #
+    # delegate_to: localhost avoids the httpapi persistent connection, which
+    # dies on reboot and may not recover on its own.
+    - name: Wait for device to start rebooting
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host }}"
+        port: 443
+        state: stopped
+        timeout: 120
+      delegate_to: localhost
+      when: upgrade.changed and not ansible_check_mode
+
+    - name: Wait for device to come back online
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host }}"
+        port: 443
+        state: started
+        timeout: 420
+      delegate_to: localhost
+      when: upgrade.changed and not ansible_check_mode
+
+    - name: Reset the httpapi persistent connection after the reboot
+      ansible.builtin.meta: reset_connection
+
+    - name: Verify upgrade succeeded
+      opengear.ng.system_firmware_upgrade:
+        state: gathered
+      register: final_status
+      when: upgrade.changed and not ansible_check_mode
+
+    - name: Verify firmware version
+      ansible.builtin.assert:
+        that:
+          - final_status.gathered.upgrade_status is none or
+            final_status.gathered.upgrade_status.state != 'error'
+          - final_status.gathered.current_version == "25.11.4"
+        fail_msg: "Firmware upgrade failed: {{ final_status.gathered.upgrade_status.error_message | default('unknown error') }}"
+      when: upgrade.changed and not ansible_check_mode

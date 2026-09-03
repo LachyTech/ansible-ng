@@ -1,0 +1,56 @@
+---
+- name: Example playbook for performing a factory reset
+  hosts: opengear
+  gather_facts: false
+
+  tasks:
+    - name: Erase device configuration and restore factory defaults
+      opengear.ng.system_factory_reset:
+      register: reset
+
+    # Wait for the device to go offline (confirms the reboot has started)
+    # before polling for it to come back up. Without this, wait_for may
+    # return immediately if the device hasn't started rebooting yet.
+    #
+    # delegate_to: localhost avoids the httpapi persistent connection, which
+    # dies on reboot and may not recover on its own.
+    - name: Wait for device to start rebooting
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host }}"
+        port: 443
+        state: stopped
+        timeout: 120
+      delegate_to: localhost
+      when: reset.changed
+
+    - name: Wait for device to come back online
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host }}"
+        port: 443
+        state: started
+        timeout: 420
+      delegate_to: localhost
+      when: reset.changed
+
+    - name: Reset the httpapi persistent connection after the reboot
+      ansible.builtin.meta: reset_connection
+
+    # After a factory reset the device boots with password "default" and
+    # requires an immediate password change before any login succeeds.
+    # Passing new_password in the same request handles this atomically.
+    #
+    # If ZTP is configured and has already set the password, the "default"
+    # password will be rejected (HTTP 401) and this task is a no-op.
+    - name: Set initial password after factory reset
+      ansible.builtin.uri:
+        url: "https://{{ ansible_host }}/api/v2/sessions/"
+        method: POST
+        body_format: json
+        body:
+          username: "{{ ansible_user }}"
+          password: default
+          new_password: "{{ ansible_password }}"
+        validate_certs: false
+        status_code: [200, 401]
+      failed_when: false
+      when: reset.changed

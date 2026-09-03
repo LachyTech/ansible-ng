@@ -1,0 +1,36 @@
+---
+- name: Example playbook for system time configuration
+  hosts: opengear
+  gather_facts: false
+
+  tasks:
+    - name: Gather the timezone (the clock is excluded by default)
+      opengear.ng.facts:
+        gather_network_resources:
+          - system_time
+
+    - name: Show current timezone fact
+      ansible.builtin.debug:
+        var: ansible_network_resources.system_time
+
+    - name: Gather timezone and the current device clock
+      opengear.ng.system_time:
+        state: gathered
+        gather_time: true
+      register: time
+
+    - name: Show gathered time fact
+      ansible.builtin.debug:
+        var: time
+
+    - name: Set the system timezone
+      opengear.ng.system_time:
+        config:
+          timezone: Australia/Brisbane
+        state: merged
+
+    - name: Set the system clock
+      opengear.ng.system_time:
+        config:
+          time: "13:58 13 Jul 2026"
+        state: merged

@@ -9,29 +9,30 @@ __metaclass__ = type
 
 import json
 
+from ansible.module_utils import basic
 from ansible_collections.opengear.ng.tests.unit.compat.mock import patch
-from ansible_collections.opengear.ng.plugins.modules import firmware_upgrade
+from ansible_collections.opengear.ng.plugins.modules import system_firmware_upgrade
 from ansible_collections.opengear.ng.tests.unit.modules.utils import set_module_args
 from .module_test_base import TestModuleBase
 
 
-class TestFirmwareUpgradeModule(TestModuleBase):
+class TestSystemFirmwareUpgradeModule(TestModuleBase):
 
-    module = firmware_upgrade
+    module = system_firmware_upgrade
 
     def setUp(self):
-        super(TestFirmwareUpgradeModule, self).setUp()
+        super(TestSystemFirmwareUpgradeModule, self).setUp()
         self.maxDiff = None
 
         self.mock_get_version = patch(
             "ansible_collections.opengear.ng.plugins.module_utils."
-            "facts.firmware_upgrade.FirmwareUpgradeFacts.get_version"
+            "facts.system_firmware_upgrade.SystemFirmwareUpgradeFacts.get_version"
         )
         self.get_version = self.mock_get_version.start()
 
         self.mock_get_upgrade_status = patch(
             "ansible_collections.opengear.ng.plugins.module_utils."
-            "facts.firmware_upgrade.FirmwareUpgradeFacts.get_upgrade_status"
+            "facts.system_firmware_upgrade.SystemFirmwareUpgradeFacts.get_upgrade_status"
         )
         self.get_upgrade_status = self.mock_get_upgrade_status.start()
 
@@ -42,7 +43,7 @@ class TestFirmwareUpgradeModule(TestModuleBase):
         self.connection = self.mock_connection.start()
 
     def tearDown(self):
-        super(TestFirmwareUpgradeModule, self).tearDown()
+        super(TestSystemFirmwareUpgradeModule, self).tearDown()
         self.mock_get_version.stop()
         self.mock_get_upgrade_status.stop()
         self.mock_connection.stop()
@@ -57,7 +58,7 @@ class TestFirmwareUpgradeModule(TestModuleBase):
         }
 
     # --- merged: upgrade with file ---
-    def test_firmware_upgrade_merged_file(self):
+    def test_system_firmware_upgrade_merged_file(self):
         set_module_args({
             'config': {
                 'version': '25.11.0',
@@ -79,7 +80,7 @@ class TestFirmwareUpgradeModule(TestModuleBase):
         self.execute_module(changed=True, commands=commands)
 
     # --- merged: upgrade with url ---
-    def test_firmware_upgrade_merged_url(self):
+    def test_system_firmware_upgrade_merged_url(self):
         set_module_args({
             'config': {
                 'version': '25.11.0',
@@ -101,7 +102,7 @@ class TestFirmwareUpgradeModule(TestModuleBase):
         self.execute_module(changed=True, commands=commands)
 
     # --- merged: idempotent ---
-    def test_firmware_upgrade_merged_idempotent(self):
+    def test_system_firmware_upgrade_merged_idempotent(self):
         set_module_args({
             'config': {
                 'version': '25.04.0',
@@ -114,7 +115,7 @@ class TestFirmwareUpgradeModule(TestModuleBase):
         self.execute_module(changed=False, commands=commands)
 
     # --- merged: with options ---
-    def test_firmware_upgrade_merged_ignore_version(self):
+    def test_system_firmware_upgrade_merged_ignore_version(self):
         set_module_args({
             'config': {
                 'version': '25.11.0',
@@ -136,7 +137,7 @@ class TestFirmwareUpgradeModule(TestModuleBase):
         ]
         self.execute_module(changed=True, commands=commands)
 
-    def test_firmware_upgrade_merged_erase_config(self):
+    def test_system_firmware_upgrade_merged_erase_config(self):
         set_module_args({
             'config': {
                 'version': '25.11.0',
@@ -158,7 +159,7 @@ class TestFirmwareUpgradeModule(TestModuleBase):
         ]
         self.execute_module(changed=True, commands=commands)
 
-    def test_firmware_upgrade_merged_all_options(self):
+    def test_system_firmware_upgrade_merged_all_options(self):
         set_module_args({
             'config': {
                 'version': '25.11.0',
@@ -182,7 +183,7 @@ class TestFirmwareUpgradeModule(TestModuleBase):
         self.execute_module(changed=True, commands=commands)
 
     # --- merged: check mode ---
-    def test_firmware_upgrade_check_mode(self):
+    def test_system_firmware_upgrade_check_mode(self):
         set_module_args({
             '_ansible_check_mode': True,
             'config': {
@@ -197,7 +198,7 @@ class TestFirmwareUpgradeModule(TestModuleBase):
         self.connection.return_value.send_multipart_request.assert_not_called()
 
     # --- merged: diff mode ---
-    def test_firmware_upgrade_diff(self):
+    def test_system_firmware_upgrade_diff(self):
         set_module_args({
             '_ansible_diff': True,
             'config': {
@@ -214,7 +215,7 @@ class TestFirmwareUpgradeModule(TestModuleBase):
         self.assertEqual(before['current_version'], '25.04.0')
         self.assertEqual(after['current_version'], '25.11.0')
 
-    def test_firmware_upgrade_no_diff_when_idempotent(self):
+    def test_system_firmware_upgrade_no_diff_when_idempotent(self):
         set_module_args({
             '_ansible_diff': True,
             'config': {
@@ -227,8 +228,73 @@ class TestFirmwareUpgradeModule(TestModuleBase):
         result = self.execute_module(changed=False)
         self.assertNotIn('diff', result)
 
+    # --- warnings ---
+
+    def test_erase_config_warning_emitted(self):
+        """A warning is emitted when erase_config is set and an upgrade would occur"""
+        set_module_args({
+            'config': {
+                'version': '25.11.0',
+                'firmware_image': '/tmp/firmware.raucb',
+                'erase_config': True,
+            },
+            'state': 'merged',
+        })
+
+        with patch.object(basic.AnsibleModule, 'warn') as mock_warn:
+            self.execute_module(changed=True)
+        mock_warn.assert_called_once()
+        self.assertIn('erase_config', mock_warn.call_args[0][0])
+
+    def test_erase_config_warning_emitted_in_check_mode(self):
+        """Warning is emitted in check mode — it describes what will happen"""
+        set_module_args({
+            '_ansible_check_mode': True,
+            'config': {
+                'version': '25.11.0',
+                'firmware_image': '/tmp/firmware.raucb',
+                'erase_config': True,
+            },
+            'state': 'merged',
+        })
+
+        with patch.object(basic.AnsibleModule, 'warn') as mock_warn:
+            self.execute_module(changed=True)
+        mock_warn.assert_called_once()
+        self.assertIn('erase_config', mock_warn.call_args[0][0])
+
+    def test_no_erase_warning_without_erase_config(self):
+        """No erase_config warning is emitted for a regular upgrade"""
+        set_module_args({
+            'config': {
+                'version': '25.11.0',
+                'firmware_image': '/tmp/firmware.raucb',
+            },
+            'state': 'merged',
+        })
+
+        with patch.object(basic.AnsibleModule, 'warn') as mock_warn:
+            self.execute_module(changed=True)
+        mock_warn.assert_not_called()
+
+    def test_no_erase_warning_when_idempotent(self):
+        """No erase_config warning is emitted when no upgrade is needed"""
+        set_module_args({
+            'config': {
+                'version': '25.04.0',
+                'firmware_image': '/tmp/firmware.raucb',
+                'erase_config': True,
+            },
+            'state': 'merged',
+        })
+
+        with patch.object(basic.AnsibleModule, 'warn') as mock_warn:
+            self.execute_module(changed=False)
+        erase_warnings = [c for c in mock_warn.call_args_list if 'erase_config' in c[0][0]]
+        self.assertEqual(erase_warnings, [])
+
     # --- gathered ---
-    def test_firmware_upgrade_gathered(self):
+    def test_system_firmware_upgrade_gathered(self):
         set_module_args({
             'state': 'gathered',
         })
