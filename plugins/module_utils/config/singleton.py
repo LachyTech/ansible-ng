@@ -17,6 +17,7 @@ from ansible_collections.opengear.ng.plugins.module_utils.facts.facts import Fac
 from ansible_collections.opengear.ng.plugins.module_utils.utils.utils import (
     command_builder,
     dict_diff,
+    dict_merge,
     remove_empties,
     to_list,
 )
@@ -130,6 +131,10 @@ class SingletonConfigBase(ConfigBase):
         """ Build a PUT command for each provided field that differs from the
             device. Identical for ``merged`` and ``replaced`` on a singleton.
 
+            The modified field(s) are combined with the device's current values
+            before sending, as some singleton endpoints (e.g. session_timeout)
+            reject a request that omits any of their fields.
+
         :rtype: A list
         :returns: the commands necessary to reach the desired configuration
         """
@@ -137,7 +142,9 @@ class SingletonConfigBase(ConfigBase):
         to_set = dict_diff(have, want)
         for field in to_set:
             endpoint, body_path = self.field_map[field]
-            data = to_set[field]
+            data = want[field]
+            if isinstance(data, dict) and isinstance(have.get(field), dict):
+                data = dict_merge(have[field], data)
             for key in reversed(body_path):
                 data = {key: data}
             commands.append(command_builder(data, endpoint, method='PUT'))

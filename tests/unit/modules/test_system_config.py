@@ -112,7 +112,9 @@ class TestSystemConfigModule(TestModuleBase):
         self.execute_module(changed=True, commands=commands)
 
     def test_system_merged_session_timeout_partial(self):
-        """A partial session_timeout dict pushes only the changed sub-field"""
+        """A partial session_timeout dict is merged onto the device's current
+        values and pushed as a complete object, since system/session_timeout
+        rejects a request that omits any of its fields"""
         set_module_args({
             'config': {'session_timeout': {'webui_timeout': 60}},
             'state': 'merged',
@@ -121,14 +123,19 @@ class TestSystemConfigModule(TestModuleBase):
         commands = [
             {
                 'path': 'system/session_timeout',
-                'data': {'system_session_timeout': {'webui_timeout': 60}},
+                'data': {'system_session_timeout': {
+                    'cli_timeout': 30,
+                    'serial_port_timeout': 0,
+                    'webui_timeout': 60,
+                }},
                 'method': 'PUT',
             }
         ]
         self.execute_module(changed=True, commands=commands)
 
     def test_system_merged_admin_info_partial(self):
-        """A partial admin_info dict pushes only the changed sub-field"""
+        """A partial admin_info dict is merged onto the device's current
+        values and pushed as a complete object"""
         set_module_args({
             'config': {'admin_info': {'location': 'Server Room B, Rack 9'}},
             'state': 'merged',
@@ -137,7 +144,11 @@ class TestSystemConfigModule(TestModuleBase):
         commands = [
             {
                 'path': 'system/admin_info',
-                'data': {'system_admin_info': {'location': 'Server Room B, Rack 9'}},
+                'data': {'system_admin_info': {
+                    'contact': 'netops@example.com',
+                    'hostname': 'om-device-01',
+                    'location': 'Server Room B, Rack 9',
+                }},
                 'method': 'PUT',
             }
         ]
