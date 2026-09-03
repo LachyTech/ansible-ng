@@ -17,12 +17,16 @@
     # Wait for device to go offline (confirms reboot has started) then
     # come back online. Without the stopped check, wait_for may return
     # immediately if the device hasn't started rebooting yet.
+    #
+    # delegate_to: localhost avoids the httpapi persistent connection, which
+    # dies on reboot and may not recover on its own.
     - name: Wait for device to start rebooting
       ansible.builtin.wait_for:
         host: "{{ ansible_host }}"
         port: 443
         state: stopped
         timeout: 120
+      delegate_to: localhost
       when: upgrade.changed and not ansible_check_mode
 
     - name: Wait for device to come back online
@@ -31,7 +35,11 @@
         port: 443
         state: started
         timeout: 420
+      delegate_to: localhost
       when: upgrade.changed and not ansible_check_mode
+
+    - name: Reset the httpapi persistent connection after the reboot
+      ansible.builtin.meta: reset_connection
 
     # When erase_config is true the device resets to factory defaults,
     # which means the root password resets to "default" and a forced

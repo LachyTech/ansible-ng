@@ -34,13 +34,17 @@
       delay: 10
       when: upgrade.changed and not ansible_check_mode
 
-    # Wait for device to go offline then come back online after reboot
+    # Wait for device to go offline then come back online after reboot.
+    #
+    # delegate_to: localhost avoids the httpapi persistent connection, which
+    # dies on reboot and may not recover on its own.
     - name: Wait for device to start rebooting
       ansible.builtin.wait_for:
         host: "{{ ansible_host }}"
         port: 443
         state: stopped
         timeout: 120
+      delegate_to: localhost
       when: upgrade.changed and not ansible_check_mode
 
     - name: Wait for device to come back online
@@ -49,7 +53,11 @@
         port: 443
         state: started
         timeout: 420
+      delegate_to: localhost
       when: upgrade.changed and not ansible_check_mode
+
+    - name: Reset the httpapi persistent connection after the reboot
+      ansible.builtin.meta: reset_connection
 
     - name: Verify upgrade succeeded
       opengear.ng.system_firmware_upgrade:
