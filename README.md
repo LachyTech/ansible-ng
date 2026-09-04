@@ -30,6 +30,7 @@ The Opengear NG collection supports the following Opengear product families:
 | opengear.ng.physifs                 | Manage physical network interface configuration.                                                     |
 | opengear.ng.ports_config            | Manage serial port configuration.                                                                    |
 | opengear.ng.ports_power             | Send power commands to serial ports.                                                                 |
+| opengear.ng.ports_sessions          | Manage active pmshell sessions on serial ports.                                                      |
 | opengear.ng.ports_status            | Gather live status and session data for serial ports.                                                |
 | opengear.ng.services                | Manage system service configuration.                                                                 |
 | opengear.ng.static_routes           | Manage static route configuration.                                                                   |
