@@ -1,0 +1,23 @@
+---
+- name: Example playbook for gathering serial port status
+  hosts: opengear
+  gather_facts: false
+
+  tasks:
+    - name: Gather port status
+      opengear.ng.ports_status:
+        state: gathered
+      register: ports_status
+
+    - name: Show ports with active sessions
+      ansible.builtin.debug:
+        msg: "Port {{ item.portnum }} ({{ item.label | default('unlabelled') }}) has {{ item.sessions | length }} session(s)"
+      loop: "{{ ports_status.gathered }}"
+      when: item.sessions | length > 0
+
+    - name: Assert all ports are in ok status
+      ansible.builtin.assert:
+        that:
+          - item.status == 'ok'
+        fail_msg: "Port {{ item.portnum }} status is {{ item.status }}"
+      loop: "{{ ports_status.gathered }}"
