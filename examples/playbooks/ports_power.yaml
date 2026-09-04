@@ -1,0 +1,31 @@
+---
+- name: Example playbook for sending power commands to serial ports
+  hosts: opengear
+  gather_facts: false
+
+  tasks:
+    - name: Preview a power cycle without sending it (check mode)
+      opengear.ng.ports_power:
+        config:
+          - portnum: 1
+            command: cycle
+      check_mode: true
+      register: preview
+
+    - name: Show the command that would be sent
+      ansible.builtin.debug:
+        var: preview.commands
+
+    - name: Power cycle a single port
+      opengear.ng.ports_power:
+        config:
+          - portnum: 1
+            command: cycle
+
+    - name: Power off multiple ports
+      opengear.ng.ports_power:
+        config:
+          - portnum: 3
+            command: off
+          - portnum: 4
+            command: off
