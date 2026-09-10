@@ -30,7 +30,7 @@ class FactsArgs(object):  # pylint: disable=R0903
         "ports_config",
         "ports_sessions",
         "ports_status",
-        "services",
+        "services_config",
         "static_routes",
         "system_authorized_keys",
         "system_config",
