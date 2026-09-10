@@ -1,15 +1,93 @@
 ---
+- name: Example playbook for singleton services configuration
+  hosts: opengear
+  gather_facts: false
 
-- name: Configure services
-  hosts: all
-  connection: httpapi
   tasks:
-    - name: Add Google NTP server
-      opengear.ng.services:
+    - name: Gather services_config facts
+      opengear.ng.facts:
+        gather_network_resources:
+          - services_config
+
+    - name: Show current services_config facts
+      ansible.builtin.debug:
+        var: ansible_network_resources.services_config
+
+    - name: Configure NTP servers
+      opengear.ng.services_config:
         config:
           ntp:
             enabled: true
             servers:
-              - value: au.pool.ntp.org
-        state:
-          replaced
+              - value: pool.ntp.org
+              - value: time.cloudflare.com
+        state: merged
+
+    - name: Configure LLDP/CDP
+      opengear.ng.services_config:
+        config:
+          lldp:
+            enabled: true
+            physifs:
+              - net1
+        state: merged
+
+    - name: Configure the SNMP daemon
+      opengear.ng.services_config:
+        config:
+          snmpd:
+            enabled: true
+            port: 161
+            protocol: UDP
+            rocommunity: public
+            security_level: priv
+            auth_protocol: SHA
+            auth_password: "{{ snmp_auth_password }}"
+            priv_protocol: AES
+            priv_password: "{{ snmp_priv_password }}"
+        state: merged
+
+    - name: Configure the SSH service
+      opengear.ng.services_config:
+        config:
+          ssh:
+            maxstartups_start: 10
+            maxstartups_full: 100
+            unauthenticated_serial_port_access: false
+        state: merged
+
+    - name: Enable brute force protection
+      opengear.ng.services_config:
+        config:
+          brute_force_protection:
+            ssh_enabled: true
+            https_enabled: true
+            max_retry: 5
+            ban_time: 600
+            find_time: 10
+        state: merged
+
+    - name: Enable OSPF routing
+      opengear.ng.services_config:
+        config:
+          routing:
+            ospfd:
+              enabled: true
+              router_id: 10.0.0.2
+              redistribute_static: true
+        state: merged
+
+    - name: Restrict the web UI to the loopback interface
+      opengear.ng.services_config:
+        config:
+          web:
+            allow_remote_access: false
+        state: merged
+
+    - name: Upload a new HTTPS certificate and key
+      opengear.ng.services_config:
+        config:
+          https_certificate:
+            cert: "{{ lookup('file', 'device.crt') }}"
+            key: "{{ lookup('file', 'device.key') }}"
+        state: merged

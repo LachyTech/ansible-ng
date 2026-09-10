@@ -51,6 +51,7 @@ options:
       - ports
       - pdu
       - services
+      - services_config
       - static_routes
       - system_authorized_keys
       - system_config
@@ -74,6 +75,11 @@ EXAMPLES = """
     gather_network_resources:
       - system_config
       - system_time
+
+- name: Gather singleton services facts
+  opengear.ng.facts:
+    gather_network_resources:
+      - services_config
 
 - name: Gather system info and disk space facts
   opengear.ng.facts:
