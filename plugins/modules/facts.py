@@ -50,7 +50,6 @@ options:
       - physifs
       - ports
       - pdu
-      - services
       - services_config
       - services_snmp_alert_managers
       - services_syslog

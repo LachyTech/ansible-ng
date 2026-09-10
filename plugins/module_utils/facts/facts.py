@@ -16,7 +16,6 @@ from ansible_collections.opengear.ng.plugins.module_utils.facts.groups import Gr
 from ansible_collections.opengear.ng.plugins.module_utils.facts.pdu import PduFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.physifs import PhysifsFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.ports import PortsFacts
-from ansible_collections.opengear.ng.plugins.module_utils.facts.services import ServicesFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.services_config import ServicesConfigFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.services_snmp_alert_managers import ServicesSnmpAlertManagersFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.services_syslog import ServicesSyslogFacts
@@ -47,7 +46,6 @@ FACT_RESOURCE_SUBSETS = dict(
     pdu=PduFacts,
     physifs=PhysifsFacts,
     ports=PortsFacts,
-    services=ServicesFacts,
     services_config=ServicesConfigFacts,
     services_snmp_alert_managers=ServicesSnmpAlertManagersFacts,
     services_syslog=ServicesSyslogFacts,
