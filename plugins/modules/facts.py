@@ -52,6 +52,7 @@ options:
       - pdu
       - services
       - services_config
+      - services_syslog
       - static_routes
       - system_authorized_keys
       - system_config
@@ -80,6 +81,11 @@ EXAMPLES = """
   opengear.ng.facts:
     gather_network_resources:
       - services_config
+
+- name: Gather remote syslog server facts
+  opengear.ng.facts:
+    gather_network_resources:
+      - services_syslog
 
 - name: Gather system info and disk space facts
   opengear.ng.facts:

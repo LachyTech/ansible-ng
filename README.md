@@ -31,6 +31,7 @@ The Opengear NG collection supports the following Opengear product families:
 | opengear.ng.ports                   | Manage serial port configuration.                                                                    |
 | opengear.ng.services                | Manage system service configuration.                                                                 |
 | opengear.ng.services_config         | Manage singleton service configuration (NTP, LLDP, SNMP daemon, SSH, routing, HTTPS certificate, etc).|
+| opengear.ng.services_syslog         | Manage remote syslog server configuration.                                                           |
 | opengear.ng.static_routes           | Manage static route configuration.                                                                   |
 | opengear.ng.system_config           | Manage general system configuration including admin info, banner, FIPS, and session timeouts.        |
 | opengear.ng.system_authorized_keys  | Manage SSH authorized keys for system access.                                                        |
@@ -147,6 +148,7 @@ Use `opengear.ng.facts` with `gather_network_resources` to retrieve device facts
 | `ports`                  | Serial port configuration.                                               |
 | `services`               | System service configuration.                                            |
 | `services_config`        | Singleton service configuration (NTP, LLDP, SNMP daemon, SSH, routing).  |
+| `services_syslog`        | Remote syslog server configuration.                                      |
 | `static_routes`          | Static route configuration.                                              |
 | `system_authorized_keys` | System-level SSH authorized keys.                                        |
 | `system_config`          | General system configuration (admin info, banner, FIPS, session timeouts)|
