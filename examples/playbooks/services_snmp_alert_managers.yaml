@@ -1,0 +1,51 @@
+---
+- name: Example playbook for managing SNMP Alert Managers
+  hosts: opengear
+  gather_facts: false
+
+  tasks:
+    - name: Gather services_snmp_alert_managers facts
+      opengear.ng.facts:
+        gather_network_resources:
+          - services_snmp_alert_managers
+
+    - name: Show current SNMP Alert Managers
+      ansible.builtin.debug:
+        var: ansible_network_resources.services_snmp_alert_managers
+
+    - name: Add an SNMP Alert Manager
+      opengear.ng.services_snmp_alert_managers:
+        config:
+          - name: Primary NMS
+            protocol: UDP
+            address: snmp.example.com
+            port: 162
+            version: v2c
+            msg_type: TRAP
+            community: "{{ snmp_community }}"
+        state: merged
+
+    - name: Update the community string for an existing SNMP Alert Manager
+      opengear.ng.services_snmp_alert_managers:
+        config:
+          - name: Primary NMS
+            community: "{{ new_snmp_community }}"
+        state: merged
+
+    - name: Replace all SNMP Alert Managers with this single one
+      opengear.ng.services_snmp_alert_managers:
+        config:
+          - name: Primary NMS
+            protocol: UDP
+            address: snmp.example.com
+            port: 162
+            version: v2c
+            msg_type: TRAP
+            community: "{{ snmp_community }}"
+        state: overridden
+
+    - name: Remove an SNMP Alert Manager
+      opengear.ng.services_snmp_alert_managers:
+        config:
+          - name: Primary NMS
+        state: deleted
