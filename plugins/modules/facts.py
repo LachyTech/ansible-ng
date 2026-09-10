@@ -58,6 +58,7 @@ options:
       - ports_sessions
       - ports_status
       - services_config
+      - services_snmp_alert_managers
       - services_syslog
       - static_routes
       - system_authorized_keys
@@ -92,6 +93,11 @@ EXAMPLES = """
   opengear.ng.facts:
     gather_network_resources:
       - services_syslog
+
+- name: Gather SNMP Alert Manager facts
+  opengear.ng.facts:
+    gather_network_resources:
+      - services_snmp_alert_managers
 
 - name: Gather system info and disk space facts
   opengear.ng.facts:
