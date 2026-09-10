@@ -1,0 +1,49 @@
+---
+- name: Example playbook for managing remote syslog servers
+  hosts: opengear
+  gather_facts: false
+
+  tasks:
+    - name: Gather services_syslog facts
+      opengear.ng.facts:
+        gather_network_resources:
+          - services_syslog
+
+    - name: Show current remote syslog servers
+      ansible.builtin.debug:
+        var: ansible_network_resources.services_syslog
+
+    - name: Add a remote syslog server
+      opengear.ng.services_syslog:
+        config:
+          - address: syslog.example.com
+            port: 514
+            protocol: UDP
+            min_severity: warning
+            description: Central syslog server
+        state: merged
+
+    - name: Update the minimum severity for an existing server
+      opengear.ng.services_syslog:
+        config:
+          - address: syslog.example.com
+            port: 514
+            protocol: UDP
+            min_severity: critical
+        state: merged
+
+    - name: Replace all remote syslog servers with this single one
+      opengear.ng.services_syslog:
+        config:
+          - address: syslog.example.com
+            port: 514
+            protocol: UDP
+        state: overridden
+
+    - name: Remove a remote syslog server
+      opengear.ng.services_syslog:
+        config:
+          - address: syslog.example.com
+            port: 514
+            protocol: UDP
+        state: deleted
