@@ -77,6 +77,25 @@
               redistribute_static: true
         state: merged
 
+    - name: Add/update an OSPF interface, neighbor and network (matched by identity, others left alone)
+      opengear.ng.services_config:
+        config:
+          routing:
+            ospfd:
+              interfaces:
+                - name: net1
+                  cost: 10
+                  non_broadcast: false
+                  passive: false
+                  auth_method: no_auth
+                  auth_keys: []
+              neighbors:
+                - address: 10.0.1.1
+              networks:
+                - address_with_mask: 10.0.0.0/8
+                  area: 0.0.0.0
+        state: merged
+
     - name: Enable the TFTP server
       opengear.ng.services_config:
         config:

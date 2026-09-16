@@ -161,7 +161,7 @@ class TestPduConfigModule(TestModuleBase):
         })
         result = self.execute_module(changed=True)
         body = result['commands'][0]['data']['pdu']
-        self.assertEqual(body['outlets'], [{'number': 1, 'name': 'renamed-outlet', 'port': None}])
+        self.assertEqual(body['outlets'], [{'number': 1, 'name': 'renamed-outlet'}])
 
     def test_merged_new_pdu_posts(self):
         """A PDU with no matching name triggers a POST with no id in the path."""

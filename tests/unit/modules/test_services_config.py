@@ -219,6 +219,85 @@ class TestServicesConfigModule(TestModuleBase):
         ]
         self.execute_module(changed=True, commands=commands)
 
+    def test_merged_routing_ospfd_interfaces_updates_by_name_keeps_others(self):
+        """merged matches routing.ospfd.interfaces by 'name', field-merging a matched
+        entry (preserving fields not provided), keeping unlisted entries, and adding
+        a new entry as given (name/non_broadcast/passive required for a new entry)"""
+        set_module_args({
+            'config': {
+                'routing': {
+                    'ospfd': {
+                        'interfaces': [
+                            {'name': 'net1', 'cost': 15},
+                            {'name': 'net3', 'cost': 30, 'non_broadcast': False, 'passive': False},
+                        ],
+                    },
+                },
+            },
+            'state': 'merged',
+        })
+
+        commands = [
+            {
+                'path': 'services/routing',
+                'data': {'routing': {
+                    'bgpd': {'enabled': False},
+                    'isisd': {'enabled': False},
+                    'ripd': {'enabled': False},
+                    'ospfd': {
+                        'enabled': True,
+                        'router_id': '1.1.1.1',
+                        'redistribute_connected': False,
+                        'redistribute_static': False,
+                        'redistribute_kernel': False,
+                        'interfaces': [
+                            {'name': 'net1', 'cost': 15, 'non_broadcast': True, 'passive': False},
+                            {'name': 'net2', 'cost': 20, 'non_broadcast': False, 'passive': False},
+                            {'name': 'net3', 'cost': 30, 'non_broadcast': False, 'passive': False},
+                        ],
+                        'neighbors': [{'address': '10.0.0.1'}],
+                        'networks': [{'address_with_mask': '10.0.0.0/24', 'area': '0.0.0.0'}],
+                    },
+                }},
+                'method': 'PUT',
+            }
+        ]
+        self.execute_module(changed=True, commands=commands)
+
+    def test_merged_ntp_servers_updates_by_value_keeps_others(self):
+        """merged matches ntp.servers by 'value', updating in place and keeping unlisted entries"""
+        set_module_args({
+            'config': {
+                'ntp': {
+                    'servers': [
+                        {'value': '1.pool.ntp.org', 'key': {
+                            'value': 'secret', 'index': 1, 'format': 'ASCII', 'algorithm': 'MD5',
+                        }},
+                        {'value': '2.pool.ntp.org'},
+                    ],
+                },
+            },
+            'state': 'merged',
+        })
+
+        commands = [
+            {
+                'path': 'services/ntp',
+                'data': {'ntp': {
+                    'enabled': True,
+                    'servers': [
+                        {'value': '0.pool.ntp.org'},
+                        {'value': '1.pool.ntp.org', 'key': {
+                            'value': 'secret', 'index': 1, 'format': 'ASCII', 'algorithm': 'MD5',
+                        }},
+                        {'value': '2.pool.ntp.org'},
+                    ],
+                }},
+                'method': 'PUT',
+            }
+        ]
+        self.execute_module(changed=True, commands=commands)
+
     # --- replaced ---
     def test_replaced_behaves_like_merged(self):
         """replaced on a singleton only touches provided fields"""
@@ -231,6 +310,58 @@ class TestServicesConfigModule(TestModuleBase):
             {
                 'path': 'services/perifrouted',
                 'data': {'perifrouted': {'enabled': True}},
+                'method': 'PUT',
+            }
+        ]
+        self.execute_module(changed=True, commands=commands)
+
+    def test_replaced_routing_ospfd_neighbors_drops_unlisted(self):
+        """replaced sends routing.ospfd.neighbors as the complete list, dropping unlisted entries"""
+        set_module_args({
+            'config': {'routing': {'ospfd': {'neighbors': [{'address': '10.0.0.2'}]}}},
+            'state': 'replaced',
+        })
+
+        commands = [
+            {
+                'path': 'services/routing',
+                'data': {'routing': {
+                    'bgpd': {'enabled': False},
+                    'isisd': {'enabled': False},
+                    'ripd': {'enabled': False},
+                    'ospfd': {
+                        'enabled': True,
+                        'router_id': '1.1.1.1',
+                        'redistribute_connected': False,
+                        'redistribute_static': False,
+                        'redistribute_kernel': False,
+                        'interfaces': [
+                            {'name': 'net1', 'cost': 10, 'non_broadcast': True, 'passive': False},
+                            {'name': 'net2', 'cost': 20, 'non_broadcast': False, 'passive': False},
+                        ],
+                        'neighbors': [{'address': '10.0.0.2'}],
+                        'networks': [{'address_with_mask': '10.0.0.0/24', 'area': '0.0.0.0'}],
+                    },
+                }},
+                'method': 'PUT',
+            }
+        ]
+        self.execute_module(changed=True, commands=commands)
+
+    def test_replaced_ntp_servers_drops_unlisted(self):
+        """replaced sends ntp.servers as the complete list, dropping unlisted entries"""
+        set_module_args({
+            'config': {'ntp': {'servers': [{'value': '2.pool.ntp.org'}]}},
+            'state': 'replaced',
+        })
+
+        commands = [
+            {
+                'path': 'services/ntp',
+                'data': {'ntp': {
+                    'enabled': True,
+                    'servers': [{'value': '2.pool.ntp.org'}],
+                }},
                 'method': 'PUT',
             }
         ]
