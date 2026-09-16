@@ -110,6 +110,10 @@ class SingletonFacts(object):
                 config.pop(field, None)
                 continue
             if field not in conf:
+                # Only reachable for optional_fields whose GET failed - drop
+                # the field entirely rather than reporting the argspec's
+                # generated skeleton default as if it were a real value.
+                config.pop(field, None)
                 continue
             value = conf[field]
             for key in body_path:
