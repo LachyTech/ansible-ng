@@ -16,7 +16,7 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = """
 ---
-module: user_authorized_keys
+module: users_authorized_keys
 version_added: '1.0.0'
 short_description: Manages configuration of user authorized keys on Opengear devices
 description:
@@ -60,7 +60,7 @@ notes:
 
 EXAMPLES = """
 - name: Add authorized keys for a user
-  opengear.ng.user_authorized_keys:
+  opengear.ng.users_authorized_keys:
     config:
       - username: netops
         keys:
@@ -69,7 +69,7 @@ EXAMPLES = """
     state: merged
 
 - name: Replace all authorized keys for a user
-  opengear.ng.user_authorized_keys:
+  opengear.ng.users_authorized_keys:
     config:
       - username: netops
         keys:
@@ -77,7 +77,7 @@ EXAMPLES = """
     state: replaced
 
 - name: Delete specific authorized keys for a user
-  opengear.ng.user_authorized_keys:
+  opengear.ng.users_authorized_keys:
     config:
       - username: netops
         keys:
@@ -87,7 +87,7 @@ EXAMPLES = """
 - name: Gather authorized keys facts
   opengear.ng.facts:
     gather_network_resources:
-      - user_authorized_keys
+      - users_authorized_keys
 """
 
 RETURN = """
@@ -106,8 +106,8 @@ commands:
 """
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.opengear.ng.plugins.module_utils.argspec.user_authorized_keys import UserAuthorizedKeysArgs
-from ansible_collections.opengear.ng.plugins.module_utils.config.user_authorized_keys import UserAuthorizedKeys
+from ansible_collections.opengear.ng.plugins.module_utils.argspec.users_authorized_keys import UsersAuthorizedKeysArgs
+from ansible_collections.opengear.ng.plugins.module_utils.config.users_authorized_keys import UsersAuthorizedKeys
 
 
 def main():
@@ -116,10 +116,10 @@ def main():
 
     :returns: the result form module invocation
     """
-    module = AnsibleModule(argument_spec=UserAuthorizedKeysArgs.argument_spec,
+    module = AnsibleModule(argument_spec=UsersAuthorizedKeysArgs.argument_spec,
                            supports_check_mode=True)
 
-    result = UserAuthorizedKeys(module).execute_module()
+    result = UsersAuthorizedKeys(module).execute_module()
     for warning in result.pop('warnings', []):
         module.warn(warning)
     module.exit_json(**result)

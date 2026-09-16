@@ -23,7 +23,7 @@ short_description: Manages system-level SSH authorized keys on Opengear devices
 description:
   - Manages system-level SSH authorized keys on Opengear devices.
   - These are a flat, system-wide collection of keys, each associated with a
-    username. This is distinct from M(opengear.ng.user_authorized_keys), which
+    username. This is distinct from M(opengear.ng.users_authorized_keys), which
     manages keys scoped to an individual user account.
   - A key's identity for idempotency is the combination of its C(username) and
     C(key) string.

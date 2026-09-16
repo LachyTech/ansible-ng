@@ -38,7 +38,7 @@ options:
       - When supplied, this argument will restrict the facts collected to a given subset.
       - Use C(all) to gather all subsets except opt-in facts that must be requested explicitly
       - >-
-        Opt-in facts are: C(system_firmware_upgrade, user_authorized_keys,
+        Opt-in facts are: C(system_firmware_upgrade, users_authorized_keys,
         system_authorized_keys, ports_status, ports_sessions,
         ports_auto_discover, pdu_status)
     required: false
@@ -67,8 +67,8 @@ options:
       - system_firmware_upgrade
       - system_info
       - system_time
-      - user_authorized_keys
       - users
+      - users_authorized_keys
     version_added: '1.0.0'
 """
 

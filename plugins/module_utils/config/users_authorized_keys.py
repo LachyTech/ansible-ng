@@ -20,9 +20,9 @@ from ansible_collections.opengear.ng.plugins.module_utils.utils.utils import (
 )
 
 
-class UserAuthorizedKeys(ConfigBase):
+class UsersAuthorizedKeys(ConfigBase):
     """
-    The user_authorized_keys class
+    The users_authorized_keys class
     """
 
     gather_subset = [
@@ -31,20 +31,20 @@ class UserAuthorizedKeys(ConfigBase):
     ]
 
     gather_network_resources = [
-        'user_authorized_keys',
+        'users_authorized_keys',
     ]
 
     def __init__(self, module):
-        super(UserAuthorizedKeys, self).__init__(module)
+        super(UsersAuthorizedKeys, self).__init__(module)
 
-    def get_user_authorized_keys_facts(self):
+    def get_users_authorized_keys_facts(self):
         """ Get the 'facts' (the current configuration)
 
         :rtype: A list
         :returns: The current configuration as a list
         """
         facts, _warnings = Facts(self._module).get_facts(self.gather_subset, self.gather_network_resources)
-        facts_data = facts['ansible_network_resources'].get('user_authorized_keys')
+        facts_data = facts['ansible_network_resources'].get('users_authorized_keys')
         if not facts_data:
             return []
         return facts_data
@@ -63,7 +63,7 @@ class UserAuthorizedKeys(ConfigBase):
         # Get facts
         # ----------------------
         if self.state in self.ACTION_STATES or self.state == 'gathered':
-            existing_facts = self.get_user_authorized_keys_facts()
+            existing_facts = self.get_users_authorized_keys_facts()
         else:
             existing_facts = []
         # ----------------------
@@ -89,7 +89,7 @@ class UserAuthorizedKeys(ConfigBase):
         result['commands'] = commands
 
         if self.state in self.ACTION_STATES:
-            changed_facts = self.get_user_authorized_keys_facts()
+            changed_facts = self.get_users_authorized_keys_facts()
             result['before'] = existing_facts
             if result['changed']:
                 result['after'] = changed_facts

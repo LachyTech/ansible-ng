@@ -25,7 +25,7 @@ class SystemAuthorizedKeys(ConfigBase):
     """
     Manages system-level SSH authorized keys on Opengear devices.
 
-    Unlike user_authorized_keys (scoped under a user), these are a flat
+    Unlike users_authorized_keys (scoped under a user), these are a flat
     system-wide collection; each record carries the associated ``username`` and
     the ``key`` string, and the device assigns an ``id`` used for deletion.
     A record's identity for idempotency is the ``(username, key)`` pair.
