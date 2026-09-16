@@ -18,6 +18,7 @@ from ansible_collections.opengear.ng.plugins.module_utils.utils.utils import (
     command_builder,
     dict_diff,
     dict_merge,
+    reconcile_full_replace_lists,
     remove_empties,
     to_list,
 )
@@ -44,6 +45,12 @@ class SingletonConfigBase(ConfigBase):
 
     resource_name = None
     field_map = {}
+    # {field: {sub_key: identity_key}} - for each top-level field whose
+    # endpoint PUT replaces whole nested lists, the list-valued sub_keys and
+    # what identifies an item. On merged, items are matched against the
+    # device's current list by identity_key and merged/appended in place;
+    # on replaced, want's list is used as-is.
+    full_replace_list_fields = {}
 
     ACTION_STATES = ['merged', 'replaced']
 
@@ -144,7 +151,12 @@ class SingletonConfigBase(ConfigBase):
             endpoint, body_path = self.field_map[field]
             data = want[field]
             if isinstance(data, dict) and isinstance(have.get(field), dict):
-                data = dict_merge(have[field], data)
+                identity_keys = self.full_replace_list_fields.get(field, {})
+                if self.state == 'merged' and identity_keys:
+                    data = reconcile_full_replace_lists(have[field], data, identity_keys)
+                data = dict_merge(have[field], data, identity_keys)
+                # The device assigns this; never echo it back on a PUT.
+                data.pop('id', None)
             for key in reversed(body_path):
                 data = {key: data}
             commands.append(command_builder(data, endpoint, method='PUT'))

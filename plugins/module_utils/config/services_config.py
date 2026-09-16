@@ -21,6 +21,14 @@ class ServicesConfig(SingletonConfigBase):
 
     resource_name = 'services_config'
     field_map = FIELD_MAP
+    full_replace_list_fields = {
+        'ntp': {'servers': 'value'},
+        'routing': {
+            'interfaces': 'name',
+            'neighbors': 'address',
+            'networks': 'address_with_mask',
+        },
+    }
 
     def set_config(self, existing_facts):
         commands = super(ServicesConfig, self).set_config(existing_facts)

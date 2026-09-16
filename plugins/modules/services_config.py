@@ -190,7 +190,9 @@ options:
               interfaces:
                 type: list
                 elements: dict
-                description: Per-interface OSPF parameters.
+                description: >
+                  Per-interface OSPF parameters. C(name), C(non_broadcast),
+                  C(passive), C(auth_method) and C(auth_keys) are required.
                 suboptions:
                   name:
                     type: str
@@ -223,14 +225,14 @@ options:
                   auth_keys:
                     type: list
                     elements: dict
-                    description: Authentication keys for the associated auth_method.
+                    description: Authentication keys for the associated auth_method. Required (may be empty).
                     suboptions:
                       id:
                         type: str
-                        description: The id of the associated key.
+                        description: The id of the associated key. Required per entry.
                       key:
                         type: str
-                        description: The actual key value.
+                        description: The actual key value. Required per entry.
               neighbors:
                 type: list
                 elements: dict
@@ -368,6 +370,12 @@ options:
     - gathered
     - rendered
     default: merged
+notes:
+  - C(ntp.servers) and C(routing.ospfd.interfaces)/C(neighbors)/C(networks) are
+    matched by an identity field (server C(value), interface C(name), etc.) On
+    C(merged), a matching entry is updated in place, unmatched existing entries
+    are kept, and new ones are appended. On C(replaced), the provided list becomes
+    the complete list.
 """
 
 EXAMPLES = """
