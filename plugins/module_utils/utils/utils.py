@@ -8,6 +8,8 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
+import json
+
 
 def command_builder(data, path, instance_id=None, delete_exceptions=None, method=None):
     """
@@ -91,8 +93,13 @@ def dict_diff(base, comparable):
             if nested:
                 diff[key] = nested
         elif isinstance(value, list) and isinstance(base.get(key), list):
-            # Normalise order before comparing
-            if sorted(value) != sorted(base[key]):
+            # Normalise order before comparing. Elements may be unorderable
+            # (e.g. dicts), so sort by a JSON-serialised key rather than the
+            # elements themselves.
+            def sort_key(item):
+                return json.dumps(item, sort_keys=True)
+
+            if sorted(value, key=sort_key) != sorted(base[key], key=sort_key):
                 diff[key] = value
         elif base[key] != value:
             diff[key] = value
