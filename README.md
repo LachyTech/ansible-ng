@@ -45,8 +45,8 @@ The Opengear NG collection supports the following Opengear product families:
 | opengear.ng.system_firmware_upgrade      | Manage firmware upgrades on Opengear devices.                                                        |
 | opengear.ng.system_reboot                | Reboot an Opengear appliance.                                                                        |
 | opengear.ng.system_time                  | Manage system time and timezone configuration.                                                       |
-| opengear.ng.user_authorized_keys         | Manage configuration of user authorized keys on Opengear devices.                                    |
 | opengear.ng.users                        | Manage user configuration.                                                                           |
+| opengear.ng.users_authorized_keys        | Manage configuration of user authorized keys on Opengear devices.                                    |
 
 ## Connections
 Modules in this collection use the Ansible `httpapi` connection plugin by default
@@ -166,8 +166,8 @@ Use `opengear.ng.facts` with `gather_network_resources` to retrieve device facts
 | `system_firmware_upgrade`      | Current firmware version and upgrade status.                             |
 | `system_info`                  | Read-only system identity facts (model, serial number, firmware version).|
 | `system_time`                  | System time and timezone configuration.                                  |
-| `user_authorized_keys`         | Per-user SSH authorized keys.                                            |
 | `users`                        | User configuration.                                                      |
+| `users_authorized_keys`        | Per-user SSH authorized keys.                                            |
 
 ```yaml
 - name: Gather system information and disk space facts

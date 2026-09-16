@@ -9,9 +9,9 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-class UserAuthorizedKeysArgs(object):  # pylint: disable=R0903
+class UsersAuthorizedKeysArgs(object):  # pylint: disable=R0903
     """
-    Argument specification for the user_authorized_keys module.
+    Argument specification for the users_authorized_keys module.
     """
 
     def __init__(self, **kwargs):

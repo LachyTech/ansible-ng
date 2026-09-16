@@ -32,10 +32,10 @@ class TestFactsModule(TestModuleBase):
             ]
             return mock
 
-        def _setup_user_authorized_keys_mocks(self):
+        def _setup_users_authorized_keys_mocks(self):
             mock_users = patch(
                 "ansible_collections.opengear.ng.plugins.module_utils."
-                "facts.user_authorized_keys.UserAuthorizedKeysFacts.get_users"
+                "facts.users_authorized_keys.UsersAuthorizedKeysFacts.get_users"
             )
             mock_users.start().return_value = [
                 {'username': 'user1', 'id': 'users-1', 'enabled': True},
@@ -43,7 +43,7 @@ class TestFactsModule(TestModuleBase):
             ]
             mock_keys = patch(
                 "ansible_collections.opengear.ng.plugins.module_utils."
-                "facts.user_authorized_keys.UserAuthorizedKeysFacts.get_device_data"
+                "facts.users_authorized_keys.UsersAuthorizedKeysFacts.get_device_data"
             )
             mock_keys.start().return_value = [
                 {
@@ -83,7 +83,7 @@ class TestFactsModule(TestModuleBase):
             return mock_version, mock_status
 
         self.mock_users = _setup_users_mocks(self)
-        self.mock_uak_users, self.mock_uak_keys = _setup_user_authorized_keys_mocks(self)
+        self.mock_uak_users, self.mock_uak_keys = _setup_users_authorized_keys_mocks(self)
         self.mock_groups = _setup_groups_mocks(self)
         self.mock_fw_version, self.mock_fw_status = _setup_system_firmware_upgrade_mocks(self)
 
@@ -161,9 +161,9 @@ class TestFactsModule(TestModuleBase):
         self.assertIn('ansible_network_resources', result['ansible_facts'])
         self.assertIn('users', result['ansible_facts']['ansible_network_resources'])
 
-    def test_facts_gather_user_authorized_keys(self):
-        """Facts module dispatches correctly to user_authorized_keys facts class"""
-        set_module_args({'gather_network_resources': ['user_authorized_keys']})
+    def test_facts_gather_users_authorized_keys(self):
+        """Facts module dispatches correctly to users_authorized_keys facts class"""
+        set_module_args({'gather_network_resources': ['users_authorized_keys']})
         result = self.execute_module(changed=False)
 
         self.assertIn('ansible_facts', result)

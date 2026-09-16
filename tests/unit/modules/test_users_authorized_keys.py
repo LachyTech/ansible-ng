@@ -4,30 +4,30 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 from ansible_collections.opengear.ng.tests.unit.compat.mock import patch
-from ansible_collections.opengear.ng.plugins.modules import user_authorized_keys
+from ansible_collections.opengear.ng.plugins.modules import users_authorized_keys
 from ansible_collections.opengear.ng.tests.unit.modules.utils import set_module_args
 from .module_test_base import TestModuleBase, load_fixture
 
 
-class TestUserAuthorizedKeysModule(TestModuleBase):
+class TestUsersAuthorizedKeysModule(TestModuleBase):
 
-    module = user_authorized_keys
+    module = users_authorized_keys
 
     def setUp(self):
-        super(TestUserAuthorizedKeysModule, self).setUp()
+        super(TestUsersAuthorizedKeysModule, self).setUp()
         self.maxDiff = None
 
         # Mock the users lookup (get_users) used to build username -> user_id map
         self.mock_get_users = patch(
             "ansible_collections.opengear.ng.plugins.module_utils."
-            "facts.user_authorized_keys.UserAuthorizedKeysFacts.get_users"
+            "facts.users_authorized_keys.UsersAuthorizedKeysFacts.get_users"
         )
         self.get_users = self.mock_get_users.start()
 
         # Mock the per-user key fetch
         self.mock_get_device_data = patch(
             "ansible_collections.opengear.ng.plugins.module_utils."
-            "facts.user_authorized_keys.UserAuthorizedKeysFacts.get_device_data"
+            "facts.users_authorized_keys.UsersAuthorizedKeysFacts.get_device_data"
         )
         self.get_device_data = self.mock_get_device_data.start()
 
@@ -38,13 +38,13 @@ class TestUserAuthorizedKeysModule(TestModuleBase):
         self.connection = self.mock_connection.start()
 
     def tearDown(self):
-        super(TestUserAuthorizedKeysModule, self).tearDown()
+        super(TestUsersAuthorizedKeysModule, self).tearDown()
         self.mock_get_users.stop()
         self.mock_get_device_data.stop()
         self.mock_connection.stop()
 
     def load_fixtures(self, commands=None):
-        fixture = load_fixture("user_authorized_keys_config.cfg")
+        fixture = load_fixture("users_authorized_keys_config.cfg")
 
         # get_users returns a list of {username, id} dicts
         self.get_users.return_value = [
@@ -62,7 +62,7 @@ class TestUserAuthorizedKeysModule(TestModuleBase):
         self.get_device_data.side_effect = load_keys_for_user
 
     # --- merged ---
-    def test_user_authorized_keys_merged_add_key(self):
+    def test_users_authorized_keys_merged_add_key(self):
         """Add a new key to a user that already has keys"""
         set_module_args({
             'config': [
@@ -86,7 +86,7 @@ class TestUserAuthorizedKeysModule(TestModuleBase):
         ]
         self.execute_module(changed=True, commands=commands)
 
-    def test_user_authorized_keys_merged_idempotent(self):
+    def test_users_authorized_keys_merged_idempotent(self):
         """Merging keys already present should produce no commands"""
         set_module_args({
             'config': [
@@ -103,7 +103,7 @@ class TestUserAuthorizedKeysModule(TestModuleBase):
         commands = []
         self.execute_module(changed=False, commands=commands)
 
-    def test_user_authorized_keys_merged_new_user(self):
+    def test_users_authorized_keys_merged_new_user(self):
         """Add keys to a user that has no existing keys"""
         set_module_args({
             'config': [
@@ -127,7 +127,7 @@ class TestUserAuthorizedKeysModule(TestModuleBase):
         self.execute_module(changed=True, commands=commands)
 
     # --- replaced ---
-    def test_user_authorized_keys_replaced(self):
+    def test_users_authorized_keys_replaced(self):
         """Replace all keys for a user - removes old keys, adds new ones"""
         set_module_args({
             'config': [
@@ -160,7 +160,7 @@ class TestUserAuthorizedKeysModule(TestModuleBase):
         ]
         self.execute_module(changed=True, commands=commands)
 
-    def test_user_authorized_keys_replaced_idempotent(self):
+    def test_users_authorized_keys_replaced_idempotent(self):
         """Replacing with the same keys should produce no commands"""
         set_module_args({
             'config': [
@@ -179,7 +179,7 @@ class TestUserAuthorizedKeysModule(TestModuleBase):
         self.execute_module(changed=False, commands=commands)
 
     # --- deleted ---
-    def test_user_authorized_keys_deleted(self):
+    def test_users_authorized_keys_deleted(self):
         """Delete a specific key from a user"""
         set_module_args({
             'config': [
@@ -202,7 +202,7 @@ class TestUserAuthorizedKeysModule(TestModuleBase):
         ]
         self.execute_module(changed=True, commands=commands)
 
-    def test_user_authorized_keys_deleted_idempotent(self):
+    def test_users_authorized_keys_deleted_idempotent(self):
         """Deleting a key that doesn't exist should produce no commands"""
         set_module_args({
             'config': [
@@ -219,7 +219,7 @@ class TestUserAuthorizedKeysModule(TestModuleBase):
         commands = []
         self.execute_module(changed=False, commands=commands)
 
-    def test_user_authorized_keys_deleted_all(self):
+    def test_users_authorized_keys_deleted_all(self):
         """Delete all keys for a user"""
         set_module_args({
             'config': [
@@ -249,7 +249,7 @@ class TestUserAuthorizedKeysModule(TestModuleBase):
         self.execute_module(changed=True, commands=commands)
 
     # --- gathered ---
-    def test_user_authorized_keys_gathered(self):
+    def test_users_authorized_keys_gathered(self):
         """Gathered state returns current authorized keys structured by user"""
         set_module_args({
             'state': 'gathered',

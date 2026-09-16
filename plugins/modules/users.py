@@ -60,7 +60,7 @@ options:
         type: bool
         description: |
           Whether SSH password access is enabled. (Default: true)
-          If false a user can only use SSH with user_authorized_keys configured.
+          If false a user can only use SSH with users_authorized_keys configured.
       groups:
         type: list
         elements: str

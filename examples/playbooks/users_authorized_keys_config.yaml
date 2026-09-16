@@ -4,19 +4,19 @@
   gather_facts: false
 
   tasks:
-    - name: Gather user_authorized_keys facts
+    - name: Gather users_authorized_keys facts
       opengear.ng.facts:
         gather_network_resources:
-          - user_authorized_keys
+          - users_authorized_keys
       register: facts_result
 
-    - name: Show user_authorized_keys facts
+    - name: Show users_authorized_keys facts
       ansible.builtin.debug:
         var: facts_result
 
     # Create user authorized keys, merged with the existing keys for that user
-    - name: Create user_authorized_keys
-      opengear.ng.user_authorized_keys:
+    - name: Create users_authorized_keys
+      opengear.ng.users_authorized_keys:
         config:
           - username: root
             keys:
@@ -27,7 +27,7 @@
 
     # Replace authorized keys for a user
     - name: Replace list of authorized keys for a user
-      opengear.ng.user_authorized_keys:
+      opengear.ng.users_authorized_keys:
         config:
           - username: root
             keys:
@@ -38,7 +38,7 @@
 
     # Delete specific authorized key for a user
     - name: Delete authorized key for a user
-      opengear.ng.user_authorized_keys:
+      opengear.ng.users_authorized_keys:
         config:
           - username: root
             keys:
@@ -48,7 +48,7 @@
 
     # Delete all authorized keys for a user
     - name: Delete authorized key for a user
-      opengear.ng.user_authorized_keys:
+      opengear.ng.users_authorized_keys:
         config:
           - username: root
             keys:

@@ -30,8 +30,8 @@ from ansible_collections.opengear.ng.plugins.module_utils.facts.system_diskspace
 from ansible_collections.opengear.ng.plugins.module_utils.facts.system_firmware_upgrade import SystemFirmwareUpgradeFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.system_info import SystemInfoFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.system_time import SystemTimeFacts
-from ansible_collections.opengear.ng.plugins.module_utils.facts.user_authorized_keys import UserAuthorizedKeysFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.users import UsersFacts
+from ansible_collections.opengear.ng.plugins.module_utils.facts.users_authorized_keys import UsersAuthorizedKeysFacts
 
 FACT_LEGACY_SUBSETS = {}
 
@@ -43,7 +43,7 @@ OPT_IN_SUBSETS = frozenset([
     'ports_status',
     'system_authorized_keys',
     'system_firmware_upgrade',
-    'user_authorized_keys',
+    'users_authorized_keys',
 ])
 
 FACT_RESOURCE_SUBSETS = dict(
@@ -68,8 +68,8 @@ FACT_RESOURCE_SUBSETS = dict(
     system_firmware_upgrade=SystemFirmwareUpgradeFacts,
     system_info=SystemInfoFacts,
     system_time=SystemTimeFacts,
-    user_authorized_keys=UserAuthorizedKeysFacts,
     users=UsersFacts,
+    users_authorized_keys=UsersAuthorizedKeysFacts,
 )
 
 

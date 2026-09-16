@@ -7,16 +7,16 @@
 from copy import deepcopy
 
 from ansible_collections.opengear.ng.plugins.module_utils.utils import utils
-from ansible_collections.opengear.ng.plugins.module_utils.argspec.user_authorized_keys import UserAuthorizedKeysArgs
+from ansible_collections.opengear.ng.plugins.module_utils.argspec.users_authorized_keys import UsersAuthorizedKeysArgs
 
 
-class UserAuthorizedKeysFacts(object):
-    """ The user_authorized_keys facts class
+class UsersAuthorizedKeysFacts(object):
+    """ The users_authorized_keys facts class
     """
 
     def __init__(self, module, subspec='config', options='options'):
         self._module = module
-        self.argument_spec = UserAuthorizedKeysArgs.argument_spec
+        self.argument_spec = UsersAuthorizedKeysArgs.argument_spec
         spec = deepcopy(self.argument_spec)
         if subspec:
             if options:
@@ -37,7 +37,7 @@ class UserAuthorizedKeysFacts(object):
         return connection.get(None, f'users/{user_id}/ssh/authorized_keys', query_params=None).get('authorized_keys', [])
 
     def populate_facts(self, connection, ansible_facts, data=None):
-        """ Populate the facts for user_authorized_keys
+        """ Populate the facts for users_authorized_keys
 
         :param connection: the device connection
         :param ansible_facts: Facts dictionary
@@ -73,10 +73,10 @@ class UserAuthorizedKeysFacts(object):
                     'keys': keys,
                 })
 
-        ansible_facts['ansible_network_resources'].pop('user_authorized_keys', None)
+        ansible_facts['ansible_network_resources'].pop('users_authorized_keys', None)
         facts = {}
         if objs:
-            facts['user_authorized_keys'] = objs
+            facts['users_authorized_keys'] = objs
 
         ansible_facts['ansible_network_resources'].update(facts)
         return ansible_facts

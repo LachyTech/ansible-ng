@@ -40,8 +40,8 @@ class FactsArgs(object):  # pylint: disable=R0903
         "system_firmware_upgrade",
         "system_info",
         "system_time",
-        "user_authorized_keys",
         "users",
+        "users_authorized_keys",
     ]
 
     argument_spec = {
