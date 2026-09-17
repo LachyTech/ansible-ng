@@ -14,6 +14,7 @@ from ansible_collections.opengear.ng.plugins.module_utils.facts.base import Fact
 from ansible_collections.opengear.ng.plugins.module_utils.facts.conns import ConnsFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.failover import FailoverFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.groups import GroupsFacts
+from ansible_collections.opengear.ng.plugins.module_utils.facts.local_password_policy import LocalPasswordPolicyFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.pdu_config import PduConfigFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.pdu_status import PduStatusFacts
 from ansible_collections.opengear.ng.plugins.module_utils.facts.physifs import PhysifsFacts
@@ -52,6 +53,7 @@ FACT_RESOURCE_SUBSETS = dict(
     conns=ConnsFacts,
     failover=FailoverFacts,
     groups=GroupsFacts,
+    local_password_policy=LocalPasswordPolicyFacts,
     pdu_config=PduConfigFacts,
     pdu_status=PduStatusFacts,
     physifs=PhysifsFacts,
