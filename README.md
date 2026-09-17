@@ -26,6 +26,7 @@ The Opengear NG collection supports the following Opengear product families:
 | opengear.ng.facts                        | Gather device information and network resource configuration facts.                                  |
 | opengear.ng.failover                     | Manage failover configuration and retrieve failover status.                                          |
 | opengear.ng.groups                       | Manage user group configuration.                                                                     |
+| opengear.ng.local_password_policy        | Manage the local password policy (expiry and complexity) for local users.                            |
 | opengear.ng.pdu_config                   | Manage configuration for PDUs connected to the device.                                               |
 | opengear.ng.pdu_control                  | Send power actions to PDU outlets.                                                                   |
 | opengear.ng.pdu_status                   | Gather live status for PDUs and their outlets.                                                       |
@@ -149,6 +150,7 @@ Use `opengear.ng.facts` with `gather_network_resources` to retrieve device facts
 | `conns`                        | Network connection configuration.                                        |
 | `failover`                     | Failover configuration and status.                                       |
 | `groups`                       | User group configuration.                                                |
+| `local_password_policy`        | Local password policy (expiry and complexity) configuration.             |
 | `pdu_config`                   | PDU configuration.                                                       |
 | `pdu_status`                   | Live PDU and outlet status data.                                         |
 | `physifs`                      | Physical network interface configuration.                                |

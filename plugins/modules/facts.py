@@ -50,6 +50,7 @@ options:
       - conns
       - failover
       - groups
+      - local_password_policy
       - pdu_config
       - pdu_status
       - physifs
