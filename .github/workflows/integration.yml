@@ -1,4 +1,9 @@
 ---
+# Integration Tests (PR)
+#
+# Runs module tests against physical devices, requiring manual approval
+# via the integration-tests environment for all PRs.
+
 name: Integration Tests (PR)
 
 on:
@@ -11,6 +16,12 @@ on:
         required: false
         default: ''
 
+# Cancel a run when the same PR gets new commits.
+# workflow_dispatch runs get their own unique group via run_id and are not cancelled.
+concurrency:
+  group: integration-pr-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   integration-test:
     name: Integration Tests
@@ -18,8 +29,11 @@ jobs:
     # Only run on upstream repository
     if: github.repository == 'opengear/ansible-ng'
     # All PRs require manual approval via the integration-tests environment
-    # to serialise access to the single shared test device.
     environment: ${{ github.event_name == 'pull_request_target' && 'integration-tests' || '' }}
+    # Use concurrency group shared with main post-merge integration-test job to serialise access
+    concurrency:
+      group: integration-tests-device
+      cancel-in-progress: false
     steps:
       - name: Checkout
         uses: actions/checkout@v4
