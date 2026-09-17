@@ -1,4 +1,19 @@
 ---
+# Main CI
+#
+# Perform lint, sanity checks and unit tests without access to a physical device.
+# Triggered by:
+#   - push to main, release/** and feature/**
+#   - pull_request including forked repositories
+#   - manual dispatch
+#
+# version-check confirms galaxy.yml has version incremented from main.
+# Triggered by:
+#   - push or manual dispatch of release/** branch
+#
+# integration-test runs module tests against hardware devices to validate changes
+# post-merge to main.
+
 name: Main CI
 
 on:
@@ -9,6 +24,12 @@ on:
       - release/**
   pull_request:
   workflow_dispatch:
+
+# Use concurrency group so main CI runs once for both push trigger and
+# PR synchronisation
+concurrency:
+  group: main-ci-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
 
 jobs:
   lint:
@@ -73,14 +94,17 @@ jobs:
     name: Integration Tests
     needs: [lint, sanity, unit-test]
     runs-on: [self-hosted, ansible, integration-tests]
-    environment: integration-tests
-    # automatically run on main and release branches only (post-merge validation)
-    # PR integration tests are handled by integration.yml
+    # Perform integration tests automatically on merge to main as changes are
+    # reviewed and manually approved pre-merge for all PRs.
+    environment: integration-tests-main
+    # Use concurrency group to serialise access to integration-test devices
+    concurrency:
+      group: integration-tests-device
+      cancel-in-progress: false
+    # Perform integration tests on upstream main only
     if: |
-      github.event_name == 'push' && github.repository == 'opengear/ansible-ng' && (
-        github.ref == 'refs/heads/main' ||
-        startsWith(github.ref, 'refs/heads/release/')
-      )
+      github.event_name == 'push' && github.repository == 'opengear/ansible-ng' &&
+      github.ref == 'refs/heads/main'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
