@@ -26,10 +26,12 @@ on:
   workflow_dispatch:
 
 # Use concurrency group so main CI runs once for both push trigger and
-# PR synchronisation
+# PR synchronisation. Pushes to main queue instead of cancelling, since
+# each one is permanent history and integration-test may be mid-run
+# against the real device - only non-main branches cancel superseded runs.
 concurrency:
   group: main-ci-${{ github.head_ref || github.ref_name }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   lint:
