@@ -1,0 +1,5 @@
+changes_file: changelog.yml
+changes_format: combined
+changelog_filename_template: ../CHANGELOG.rst
+ignore_other_fragment_extensions: true
+changelog_nice_yaml: true

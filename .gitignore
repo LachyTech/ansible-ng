@@ -13,6 +13,9 @@ ansible_collections/
 # Collection build artifacts
 **/*.tar.gz
 
+# antsibull-changelog cache
+changelogs/.plugin-cache.yaml
+
 # Test output
 tests/output/
 **/tests/output/
