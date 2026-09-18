@@ -13,6 +13,10 @@
 #
 # integration-test runs module tests against hardware devices to validate changes
 # post-merge to main.
+#
+# detect-increment checks whether galaxy.yml's version was incremented from
+# the previous commit on main - i.e. a release/** branch merged. start-release
+# then dispatches the Release workflow, but only when it was.
 
 name: Main CI
 
@@ -133,3 +137,47 @@ jobs:
         if: always()
         shell: bash
         run: rm -f inventory.networking
+
+  detect-increment:
+    name: Detect version increment
+    needs: [integration-test]
+    runs-on: ubuntu-latest
+    if: |
+      needs.integration-test.result == 'success' &&
+      github.repository == 'opengear/ansible-ng'
+    outputs:
+      incremented: ${{ steps.version.outputs.incremented }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for a version increment
+        id: version
+        uses: ./.github/actions/version-check
+        with:
+          base-ref: ${{ github.event.before }}
+          # Detect a version change without enforcement
+          require-increment: 'false'
+
+  start-release:
+    name: Start release
+    needs: [detect-increment]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+    # Performed only if detect-increment found galaxy.yml's version
+    # increased.
+    if: needs.detect-increment.outputs.incremented == 'true'
+    steps:
+      - name: Dispatch the release workflow
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run release.yml \
+            --repo "${{ github.repository }}" \
+            --ref main \
+            -f version="${{ needs.detect-increment.outputs.version }}" \
+            -f sha="${{ github.sha }}"
