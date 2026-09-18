@@ -1,0 +1,48 @@
+name: Release
+description: Publish a pre-built collection tarball to Ansible Galaxy and create a GitHub release
+
+inputs:
+  version:
+    description: Version being released (from galaxy.yml)
+    required: true
+  sha:
+    description: Commit the release tag should point at
+    required: true
+  galaxy-api-key:
+    description: API key for publishing to Ansible Galaxy
+    required: true
+  github-token:
+    description: Token used to create the GitHub release
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+      - name: Download collection artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: collection-tarball
+          path: build
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ansible-core
+        shell: bash
+        run: pip install ansible-core
+
+      - name: Publish to Ansible Galaxy
+        shell: bash
+        run: ansible-galaxy collection publish build/*.tar.gz --api-key "${{ inputs.galaxy-api-key }}"
+
+      - name: Create GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ inputs.github-token }}
+        run: |
+          gh release create "ng-v${{ inputs.version }}" build/*.tar.gz \
+            --title "ng-v${{ inputs.version }}" \
+            --generate-notes \
+            --target "${{ inputs.sha }}"
