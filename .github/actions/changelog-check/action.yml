@@ -1,0 +1,42 @@
+name: Changelog Check
+description: Verify release notes were generated for the current release
+
+runs:
+  using: 'composite'
+  steps:
+      - name: Install antsibull-changelog
+        shell: bash
+        run: pip install antsibull-changelog
+
+      - name: Lint changelog fragments
+        shell: bash
+        run: antsibull-changelog lint
+
+      - name: Verify release notes are up to date
+        shell: bash
+        run: |
+          antsibull-changelog release
+
+          if ! git diff --quiet -- changelogs/ CHANGELOG.rst; then
+            echo "::error::Release notes are out of date. Run 'antsibull-changelog release' locally and commit the result (changelogs/changelog.yml, CHANGELOG.rst, and the consumed fragments)."
+            git diff --stat -- changelogs/ CHANGELOG.rst
+            exit 1
+          fi
+
+      - name: Verify this release has documented changes
+        shell: bash
+        run: |
+          VERSION=$(grep '^version:' galaxy.yml | awk '{print $2}')
+
+          HAS_CHANGES=$(python3 -c "
+          import yaml
+          with open('changelogs/changelog.yml') as f:
+              data = yaml.safe_load(f) or {}
+          release = (data.get('releases') or {}).get('$VERSION') or {}
+          print('true' if release.get('changes') else 'false')
+          ")
+
+          if [ "$HAS_CHANGES" != "true" ]; then
+            echo "::error::No changelog entries recorded for version $VERSION. Add a fragment under changelogs/fragments/ describing this release, then run 'antsibull-changelog release' and commit the result."
+            exit 1
+          fi
