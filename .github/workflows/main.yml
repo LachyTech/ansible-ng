@@ -78,21 +78,19 @@ jobs:
           python-version: ${{ matrix.python }}
 
   version-check:
-    runs-on: ubuntu-latest
     name: Version check
+    runs-on: ubuntu-latest
+    # Only runs on release branches, whether pushed to or manually dispatched
+    if: |
+      startsWith(github.ref, 'refs/heads/release/') &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Skip version check
-        if: "!startsWith(github.ref, 'refs/heads/release/')"
-        run: echo "Version check skipped - only runs on release branches"
-
       - name: Run version check
         uses: ./.github/actions/version-check
-        if: |
-          (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/'))
 
   integration-test:
     name: Integration Tests
