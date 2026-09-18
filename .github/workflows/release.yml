@@ -1,0 +1,59 @@
+---
+# Release
+#
+# Only runs when dispatched by Main CI's start-release job, which
+# is triggered when integration-test succeeds on main and version is
+# incremented from the previous commit after a release branch is merged.
+#
+# The collection is built and uploaded as a GitHub artifact with the
+# build-collection action, then the release action retrieves the artifact
+# and publishes to Ansible Galaxy and GitHub as a tagged release following
+# manual approval via the release environment.
+
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version being released (from galaxy.yml)
+        required: true
+      sha:
+        description: Commit to build, tag and release
+        required: true
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build collection
+    if: github.repository == 'opengear/ansible-ng'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.sha }}
+
+      - name: Build collection
+        uses: ./.github/actions/build-collection
+
+  release:
+    name: Publish release
+    needs: build
+    if: github.repository == 'opengear/ansible-ng'
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.sha }}
+
+      - name: Publish and release
+        uses: ./.github/actions/release
+        with:
+          version: ${{ inputs.version }}
+          sha: ${{ inputs.sha }}
+          galaxy-api-key: ${{ secrets.GALAXY_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,24 @@
+name: Build Collection
+description: Build the collection tarball and upload it as a workflow artifact
+
+runs:
+  using: 'composite'
+  steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ansible-core
+        shell: bash
+        run: pip install ansible-core
+
+      - name: Build collection
+        shell: bash
+        run: ansible-galaxy collection build --output-path build
+
+      - name: Upload collection artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: collection-tarball
+          path: build/*.tar.gz
