@@ -1,2 +1,16 @@
 ancestor: null
-releases: {}
+releases:
+  1.0.1:
+    changes:
+      minor_changes:
+      - Add a CI release process that publishes to Ansible Galaxy and creates a GitHub
+        release automatically once a release/** branch merges to main.
+      - Add a test fragment
+      release_summary: 'Initial release of the ``opengear.ng`` collection.
+
+        '
+    fragments:
+    - anotherminorchange.yml
+    - release-process.yml
+    - release-summary.yml
+    release_date: '2026-09-21'
