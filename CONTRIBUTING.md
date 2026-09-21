@@ -140,6 +140,22 @@ before pushing:
 git rebase -i main
 ```
 
+## Changelog Fragments
+
+If your PR changes user-facing behaviour (new feature, bugfix, breaking change, etc.),
+add a changelog fragment describing it under `changelogs/fragments/`, alongside your
+other commits - see [`changelogs/README.md`](changelogs/README.md) for the format. Add
+it as part of the same PR at the time of contribution. Fragments are editable on main
+until release time, so if changes are needed you can create a new PR.
+
+Purely internal changes (CI, tests, refactors with no user-visible effect) do not need
+a fragment.
+
+Fragments accumulate on `main` and get rolled into `CHANGELOG.rst` together the next time
+a release is cut, so there is nothing else to do once it is merged. At [release](#releasing)
+time, the fragments are collected and used to generate the release notes, then removed from
+source.
+
 ## Pull Requests
 
 - Keep PRs focused; one feature or fix per PR
@@ -147,3 +163,39 @@ git rebase -i main
 - Test changes in personal fork before opening an upstream PR
 - Ensure Main CI passes before marking the PR as "ready-for-review"
 - Integration tests are required to pass before merge
+- Add a changelog fragment if your change is user-facing (see above)
+
+## Releasing
+
+Releases are cut from a `release/**` branch:
+
+1. Create the branch from `main`:
+
+   ```bash
+   git checkout -b release/0.2.0 main
+   ```
+
+2. Increment the `version` in `galaxy.yml`.
+3. If this release itself needs its own fragment (e.g. a `release_summary`,
+   or something changed directly on this branch), add it under
+   `changelogs/fragments/` as described above.
+4. Generate the release notes and commit the result:
+
+   ```bash
+   antsibull-changelog release
+   git add changelogs/ CHANGELOG.rst
+   git commit -m "release: 0.2.0"
+   ```
+
+5. Push the branch and the CI `release-readiness` job checks that:
+   - the version was actually incremented from `main`,
+   - the collection builds cleanly, and
+   - `antsibull-changelog release` has been run and committed with release notes
+     for this version.
+6. When Main CI is green including the `release-readiness` job, create a PR against
+   `opengear/ansible-ng:main` as per the standard PR process which requires successful
+   integration tests.
+7. Once merged, everything else is automatic: `integration-test` runs on main,
+   `detect-increment` confirms the version increased, and `start-release` dispatches
+   the `Release` workflow. That workflow builds the collection and waits for approval to
+   publish to Ansible Galaxy and create a GitHub release tagged `ng-v<version>`.
