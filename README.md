@@ -26,6 +26,8 @@ differences.
 | 0.1.0                 | 25.11.9                   |
 
 ## Modules
+
+<!-- pyml disable MD013 -->
 | Name                                     | Description                                                                                          |
 | ---------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | opengear.ng.auth                         | Manage remote authentication, authorization, and accounting (AAA) configuration.                     |
@@ -59,8 +61,10 @@ differences.
 | opengear.ng.system_time                  | Manage system time and timezone configuration.                                                       |
 | opengear.ng.users                        | Manage user configuration.                                                                           |
 | opengear.ng.users_authorized_keys        | Manage configuration of user authorized keys on Opengear devices.                                    |
+<!-- pyml enable MD013 -->
 
 ## Connections
+
 Modules in this collection use the Ansible `httpapi` connection plugin by default
 to communicate with Opengear devices via the REST API.
 
@@ -79,9 +83,11 @@ alongside httpapi modules.
 ## Installing The Collection
 
 You can install the latest release of this collection with the Ansible Galaxy CLI:
-```
+
+```bash
 ansible-galaxy collection install opengear.ng
 ```
+
 You can also include it in a `requirements.yml` file and install it with
 `ansible-galaxy collection install -r requirements.yml`, using the format:
 
@@ -92,7 +98,6 @@ collections:
 ```
 
 > **Developers:** See [CONTRIBUTING.md](CONTRIBUTING.md) for local development installation instructions.
-
 
 ## Using NG Collection
 
@@ -153,8 +158,10 @@ configuration of an Opengear network device, using the FQCN:
 
 ### Gathering Facts
 
-Use `opengear.ng.facts` with `gather_network_resources` to retrieve device facts. The following subsets are available:
+Use `opengear.ng.facts` with `gather_network_resources` to retrieve device facts. The following
+subsets are available:
 
+<!-- pyml disable MD013 -->
 | Subset                         | Description                                                              |
 | ------------------------------ | ------------------------------------------------------------------------ |
 | `auth`                         | Remote authentication, authorization, and accounting (AAA) configuration.|
@@ -181,6 +188,7 @@ Use `opengear.ng.facts` with `gather_network_resources` to retrieve device facts
 | `system_time`                  | System time and timezone configuration.                                  |
 | `users`                        | User configuration.                                                      |
 | `users_authorized_keys`        | Per-user SSH authorized keys.                                            |
+<!-- pyml enable MD013 -->
 
 ```yaml
 - name: Gather system information and disk space facts
@@ -202,6 +210,7 @@ Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md)
 before submitting a pull request.
 
 ### Code of Conduct
+
 This collection follows the Ansible project's [Code of Conduct][].
 Please read and familiarize yourself with this document.
 
