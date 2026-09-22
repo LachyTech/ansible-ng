@@ -1,0 +1,20 @@
+plugins:
+  md013: # line-length
+    enabled: true
+    line_length: 100
+    heading_line_length: 100
+    tables: false      # pymarkdownlnt #1604: tables: false does not suppress MD013 for table rows;
+    code_blocks: false # affected tables use <!-- pyml disable MD013 --> as a workaround
+    headings: true
+    prose: true
+  md024: # no-duplicate-heading
+    allow_different_nesting: true
+  md033: # no-inline-html
+    enabled: false
+  md046: # code-block-style
+    enabled: false
+  md048: # code-fence-style
+    enabled: true
+    style: backtick
+  md041: # first-line-heading
+    enabled: false

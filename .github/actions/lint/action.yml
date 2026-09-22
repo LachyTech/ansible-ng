@@ -1,5 +1,5 @@
 name: Lint
-description: Perform ansible lint
+description: Perform linting for consistent style
 
 inputs:
   python-version:
@@ -18,10 +18,95 @@ runs:
         shell: bash
         run: pip install ansible-core ansible-lint
 
+      - name: Install extra linting tools
+        shell: bash
+        run: pip install gitlint pymarkdownlnt
+
       - name: Install collection
         shell: bash
         run: ansible-galaxy collection install . --force
 
-      - name: Lint opengear.ng
+      - name: Lint opengear.ng collection
+        id: ansible-lint
         shell: bash
-        run: ansible-lint .
+        continue-on-error: true
+        run: |
+          set +e
+          ansible-lint -f md --nocolor . > /tmp/ansible-lint.md 2>&1
+          exit_code=$?
+          set -e
+
+          {
+            echo "## Ansible Lint"
+            echo
+            if [ "$exit_code" -eq 0 ]; then
+              echo "✅ No issues found."
+            else
+              echo '```'
+              cat /tmp/ansible-lint.md
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          cat /tmp/ansible-lint.md
+          exit "$exit_code"
+
+      - name: Lint Markdown
+        id: mdlint
+        shell: bash
+        continue-on-error: true
+        run: |
+          set +e
+          pymarkdown --strict-config scan \
+            -e ".ansible/**" \
+            --recurse ./ *.md 2>&1 > /tmp/markdown-lint.txt
+          exit_code=$?
+          set -e
+
+          {
+            echo "## Markdown Lint"
+            echo
+            if [ "$exit_code" -eq 0 ]; then
+              echo "✅ No issues found."
+            else
+              echo '```'
+              cat /tmp/markdown-lint.txt
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          cat /tmp/markdown-lint.txt
+          exit "$exit_code"
+
+      - name: Lint commit messages
+        id: gitlint
+        shell: bash
+        continue-on-error: true
+        run: |
+          set +e
+          gitlint --commits origin/main..HEAD > /tmp/gitlint.txt 2>&1
+          exit_code=$?
+          set -e
+
+          {
+            echo "## Commit Message Lint"
+            echo
+            if [ "$exit_code" -eq 0 ]; then
+              echo "✅ No issues found."
+            else
+              echo '```'
+              cat /tmp/gitlint.txt
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          cat /tmp/gitlint.txt
+          exit "$exit_code"
+
+      - name: Fail if linting issues found
+        if: |
+          steps.ansible-lint.outcome == 'failure' ||
+          steps.mdlint.outcome == 'failure' ||
+          steps.gitlint.outcome == 'failure'
+        shell: bash
+        run: exit 1

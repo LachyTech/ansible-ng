@@ -28,4 +28,25 @@ runs:
         env:
           ansible_collections: "/home/runner/.ansible/collections/ansible_collections"
         working-directory: ${{ env.ansible_collections }}/opengear/ng
-        run: ansible-test sanity --docker --python ${{ inputs.python-version }}
+        run: |
+          set +e
+          ansible-test sanity --docker --python ${{ inputs.python-version }} --lint \
+            > /tmp/sanity-lint.txt 2> /tmp/sanity.log
+          exit_code=$?
+          set -e
+
+          {
+            echo "## Sanity (Python ${{ inputs.python-version }})"
+            echo
+            if [ -s /tmp/sanity-lint.txt ]; then
+              echo '```'
+              cat /tmp/sanity-lint.txt
+              echo '```'
+            else
+              echo "✅ No issues found."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          cat /tmp/sanity.log
+          cat /tmp/sanity-lint.txt
+          exit "$exit_code"
