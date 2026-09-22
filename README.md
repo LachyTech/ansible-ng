@@ -6,6 +6,7 @@ automate the management of Opengear network appliances.
 ![Main CI Status][main-ci-status]
 
 ## Supported Products
+
 The Opengear NG collection supports the following Opengear product families:
 
 - OM12xx
@@ -13,6 +14,16 @@ The Opengear NG collection supports the following Opengear product families:
 - OM22xx
 - CM80xx
 - CM81xx
+
+## Supported Firmware
+
+The Opengear NG collection is confirmed to work with device firmware versions in the following
+table at time of release. Modules are not guaranteed to work with other versions due to API
+differences.
+
+| `opengear.ng` Version | Device Firmware           |
+| --------------------- | ------------------------- |
+| 0.1.0                 | 25.11.9                   |
 
 ## Modules
 | Name                                     | Description                                                                                          |
